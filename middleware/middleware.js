@@ -1,68 +1,100 @@
-DataBaseConnection=require('./connection');
-user=require('../model/user.model');
-validationUser=require('../util/commonFunction');
+const jwt=require('jsonwebtoken');
+const DataBaseConnection=require('./connection');
+const validationUser=require('../util/commonFunction');
 
 middleware={};
 
-middleware.validationCheck=async function(req,res,next){
-    data=await validationUser(req);
-    if(data.length==0){
+middleware.validationCheck=function(req,res,next){
+
+    let promise=new Promise(async (resolve,reject)=>{
+        data =await validationUser(req);
+        errorCount=Object.keys(data).length;
+        if(errorCount==0){
+            resolve();
+        }else{
+            res.send(data);
+        }
+    });
+    promise.then(()=>{
         next();
+    });
+}
+
+middleware.registerCheck=function(req,res,next){
+            // console.log(req.body);
+            data={};
+
+            // Email Already Exists
+            new Promise((resolve,reject)=>{
+                checkQuery=`SELECT * FROM user where user_email='${req.body.user_email}'`;
+                DataBaseConnection.query(checkQuery,function (err, result){
+                    try{
+                        if(result.length==1){
+                            data.data={status:"ERROR",message:"Email Already Exists"};
+                            check=true;
+                            console.log("Email Already Exists");
+                            reject(res.send(data));
+                        }
+                        resolve();
+                    }catch(error){
+                        resolve(error);
+                    }   
+                });
+            }).then(()=>{
+
+                // Phone Number Already Exists                
+                new Promise((resolve,reject)=>{
+                    checkQuery=`SELECT * FROM user where user_phone=${req.body.user_phone}`;
+                    DataBaseConnection.query(checkQuery,function(err,result){
+                    if(result.length==1){
+                            console.log("Phone Number IS DUPLICATE");
+                            data.data={status:"ERROR",message:"Phone Number Already Exists"};
+                            reject(res.send(data));
+                        }
+                        resolve();
+                    });
+                }).then(()=>{
+                    next();
+                }),(data)=>{
+                    res.send(data);
+                };
+                
+            }),(data)=>{
+                console.log(data);
+            };
+}
+
+middleware.verifyToken=async function(req,res,next){
+    const token_header=req.headers['user_authtoken'];
+
+    if(typeof token_header!=='undefined'){
+        data=await userController.userCheckChengePassword(req,function(data){
+            if(data.data.status=="OK"){
+                res.send(data);
+                next();
+            }else{
+                res.send(data);
+            }
+        });
     }else{
-        return res.send(data);
+        // FORBIDDEN REQUEST
+        res.sendStatus(403);
     }
 }
 
-middleware.registerCheck=async function(req,res,next){
-    // console.log(req.body);
-    data=[];
-    check=false;
-    count=0;
-
-    try{
-        if(check==false){
-            checkQuery=`SELECT * FROM user where user_email='${req.body.user_email}'`;
-            DataBaseConnection.query(checkQuery,function (err, result){
-                if(result.length==1){
-                count+=1;
-                data.push({status:"Error",message:"Email Already Exists"});
-                check=true;
-                console.log("Email Already Exists");
-                }
-            });
-        }
-
-        if(check==false){
-            //Phone Number Already Exists
-            checkQuery=`SELECT * FROM user where user_phone=${req.body.user_phone}`;
-            DataBaseConnection.query(checkQuery,function(err,result){
-                if(result.length==1){
-                        count+=1;
-                        // data.status="Error";
-                        // data.message="Phone Number Already Exists";
-                        data.push({status:"Error",message:"Phone Number Already Exists"});
-                        check=true;
-                        console.log("Phone Number Already Exists");
-                    }
-                });
-            }
-
-            setTimeout(function(){
-                if(count==0){
-                    data.push({status:"OK",message:""});
-                    res.send(data);
-                    req.app.set('status',"OK");
-                    // registerUser();
-                    next();
-                }
-                else if(count>0){
-                    return res.send(data);
-                }   
-            },300);
-            
-    }catch(e){
-        console.log(e);
-    }
+middleware.userCheckLogin=async function(req,res,next){
+    console.log(req);
+    console.log(req.body);
+    console.log(typeof req.body);
+    
+    new Promise(async (resolve,reject)=>{
+        userController.userCheckLogin(req,function(data){
+            resolve(data);
+        });
+    }).then(data=>{
+        res.send(data);
+        next();
+    });   
 }
 
 module.exports=middleware;

@@ -13,47 +13,48 @@ const userController=require('../controller/user.controller');
 
 
 // Login API
-router.post('/login',function(req,res){
-    let sqlQuery=`SELECT * FROM user where user_email='${req.body.user_email}`;
+router.post('/login',middleware.userCheckLogin,function(req,res){
 
-    //  AND user_password='${req.body.user_password}'`;
-    console.log(sqlQuery);
-    DataBaseConnection.query(sqlQuery,(err,rows,fields)=>{
-        if(isNaN(rows)){
-            res.send("");
-        }
-        if(rows[0].user_email===req.body.user_email && rows[0].user_password===req.body.user_password){
-            res.send("SUCCESSFULLY LOGIN");
-        }else{
-
-        }
-    });
 });
 
 // Register API
 router.post('/register',middleware.validationCheck,middleware.registerCheck,function(req,res){
 
-        
-            promise=new Promise(function(resolve,reject){
-                value=userController.registerUser(req,function(data){
-                    if(data){
+            const promise=new Promise(async function(resolve,reject){
+                data=await userController.registerUser(req,(data)=>{
+                    if(data.data.status=="OK"){
                         resolve(data);
+                    }else{
+                        reject(data);
                     }
-                    reject("ERROR");
                 });
             });
-        try{
-            promise.then(function(data){
-                if(req.app.get('status')=="OK"){
-                    res.send(data);
-                }
-            },function(err){
-                console.log(err);
+
+            promise.then((data)=>{
+                return res.send(data);
+            },(error)=>{
+                return res.send(error);
             });
-        }catch(e){
-            console.log(e);
-        }
-        
+});
+
+// userChangePassword
+router.post('/userchangepassword',middleware.verifyToken,function(req,res){
+});
+
+// Login Forget API
+router.post('/login/forget',middleware.userCheckLogin,function(req,res){
+});
+
+// Foget Token Change API
+router.post('/forget/token/chack',async function(req,res){
+    let start=async function() {
+        return userController.forgetPassword(req.body).then(data=> {console.log(data);return data;})
+    };
+    
+    data=await start();    
+    // return google.login(data.username, data.password).then(token => { return token } )
+
+    
 });
 
 module.exports=router;
