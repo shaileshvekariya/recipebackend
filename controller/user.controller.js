@@ -98,7 +98,7 @@ userController.userCheckLogin=async function(req,callback){
     }
     await DataBaseConnection.query(sqlQuery,(error,rows,fields)=>{
         if(rows.length==0){
-            callback(data={status:"ERROR",message:"USER NOT EXSITS"});
+            callback(data={status:"ERROR",message:"USER NOT EXISTS"});
         }else{
             callback(data={status:"OK",message:"",user_authtoken:rows[0].user_authtoken});
         }
@@ -106,7 +106,7 @@ userController.userCheckLogin=async function(req,callback){
 }
 
 userController.forgetPassword=async function(body,callback){
-            await userController.emailExsits(body,function(data){
+            await userController.emailExists(body,function(data){
                 if(data.status=="OK"){
                     callback(data);
                 }else{
@@ -115,7 +115,7 @@ userController.forgetPassword=async function(body,callback){
             });
 }
 
-userController.emailExsits=function(body,callback){
+userController.emailExists=function(body,callback){
     sqlQuery=`SELECT * FROM user where user_email='${body.user_email}'`;
     DataBaseConnection.query(sqlQuery,(error,rows,fields)=>{
         if(error){

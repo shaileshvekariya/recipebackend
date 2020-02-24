@@ -95,11 +95,11 @@ middleware.userCheckLogin=async function(req,res,next){
 
 middleware.emailCheck=async function(req,res,next){
     console.log(req.body);
-    data=await userController.emailExsits(req.body,function(data){
+    data=await userController.emailExists(req.body,function(data){
         if(data.status=="OK"){
             next();
         }else{
-            return res.send(data={status:"ERROR",message:"EMAIL DOES NOT EXSITS"});
+            return res.send(data={status:"ERROR",message:"EMAIL DOES NOT EXISTS"});
         }
     });
 }
