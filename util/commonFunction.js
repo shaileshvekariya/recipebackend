@@ -7,7 +7,7 @@ function validationUser(req){
     user.user_firstname = req.body.user_firstname.trim().toLowerCase();
     user.user_lastname  = req.body.user_lastname.trim().toLowerCase();
     user.user_email     = req.body.user_email.trim();
-    user.user_phone     = Number(req.body.user_phone.trim());
+    user.user_phone     = Number(req.body.user_phone);
     user.user_password  = req.body.user_password.trim();
     user.user_gender    = req.body.user_gender.trim().toLowerCase();
 

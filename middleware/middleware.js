@@ -5,7 +5,6 @@ const validationUser=require('../util/commonFunction');
 middleware={};
 
 middleware.validationCheck=function(req,res,next){
-
     let promise=new Promise(async (resolve,reject)=>{
         data =await validationUser(req);
         errorCount=Object.keys(data).length;
@@ -64,12 +63,12 @@ middleware.registerCheck=function(req,res,next){
             };
 }
 
-middleware.verifyToken=async function(req,res,next){
+middleware.verifyTokenChange=async function(req,res,next){
     const token_header=req.headers['user_authtoken'];
 
     if(typeof token_header!=='undefined'){
-        data=await userController.userCheckChengePassword(req,function(data){
-            if(data.data.status=="OK"){
+        data=await userController.userCheckChangePassword(req,function(data){
+            if(data.status=="OK"){
                 res.send(data);
                 next();
             }else{
@@ -83,9 +82,6 @@ middleware.verifyToken=async function(req,res,next){
 }
 
 middleware.userCheckLogin=async function(req,res,next){
-    console.log(req);
-    console.log(req.body);
-    console.log(typeof req.body);
     
     new Promise(async (resolve,reject)=>{
         userController.userCheckLogin(req,function(data){
@@ -97,4 +93,43 @@ middleware.userCheckLogin=async function(req,res,next){
     });   
 }
 
+middleware.emailCheck=async function(req,res,next){
+    console.log(req.body);
+    data=await userController.emailExsits(req.body,function(data){
+        if(data.status=="OK"){
+            next();
+        }else{
+            return res.send(data={status:"ERROR",message:"EMAIL DOES NOT EXSITS"});
+        }
+    });
+}
+
+middleware.verifyToken=async function(req,res,next){
+    const token_header=req.headers['user_authtoken'];
+    const email=req.headers['user_email'];
+    
+    if(typeof token_header!=='undefined'){
+        data=await userController.userVerifyToken(token_header,email,function(data){
+            if(data.status=="OK"){
+                // res.send(data);
+                next();
+            }else{
+                res.send(data);
+            }
+        });
+    }else{
+        // FORBIDDEN REQUEST
+        res.sendStatus(403);
+    }
+}
+
+middleware.tokenCompare=function(req,res,next){
+    userController.tokenCompare(req.body,function(data){
+        if(data.status=="OK"){
+            next();
+        }else{
+            return res.send(data);
+        }
+    });
+}
 module.exports=middleware;

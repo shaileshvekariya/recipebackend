@@ -1,8 +1,43 @@
 const jwt=require('jsonwebtoken');
-user=require('../model/user.model');
+const user=require('../model/user.model');
 const DataBaseConnection=require('../middleware/connection');
 
 userController={};
+
+userController.profileUpdated=function(email,user_profile,callback){
+    sqlQuery=`UPDATE user SET user_profile='${user_profile}' where user_email='${email}'`;
+    DataBaseConnection.query(sqlQuery,(error,result)=>{
+        if(error){
+            return callback(data={status:"ERROR",message:"PROFILE IS NOT UPDATED"});
+        }
+        if(result.affectedRows==1){
+            return callback(data={status:"OK",message:"PROFILE IS UPDATED"});
+        }
+    });
+}
+
+userController.profile=function(email,callback){
+    let sqlQuery=`SELECT user_firstname,user_lastname,user_email,user_phone,user_gender,user_profile FROM user where user_email='${email}'`;
+    DataBaseConnection.query(sqlQuery,function(error,result){
+        if(result.length>=1){
+            return callback(result[0]);
+        }
+    });
+};
+
+userController.userVerifyToken=function(token_header,email,callback){
+    sqlQuery=`SELECT * FROM user where user_authtoken='${token_header}' AND user_email='${email}'`;
+    DataBaseConnection.query(sqlQuery,(error,rows)=>{
+        if(error){
+            return callback (data={status:"ERROR",message:"TOKEN IS NOT AVAILABLE"});
+        }
+        if(rows.length>=1){
+            return callback (data={status:"OK",message:"TOKEN IS AVAILABLE"});
+        }else{
+            return callback (data={status:"ERROR",message:"USER IS AVAILABLE TOKEN IS CHANGE"});
+        }
+    });
+};
 
 userController.registerUser=async function(req,callback){
     user.user_firstname = req.body.user_firstname.trim().toLowerCase();
@@ -33,25 +68,20 @@ userController.registerUser=async function(req,callback){
     });
 }   
 
-
-userController.userCheckChengePassword=async function(req,callback){
-    // console.log(req.body);
-    // console.log(req.headers);
-    let data={};
+userController.userCheckChangePassword=async function(req,callback){
     let sqlQuery=`SELECT user_id FROM user where user_authtoken='${req.headers.user_authtoken}'
     AND user_password='${req.body.user_oldpassword}'`;
     await DataBaseConnection.query(sqlQuery,async function(error,rows){
         if(rows.length==0){
-            data.data={status:"ERROR",message:"OLD PASSWORD IS NOT MATCHING"};
+            data={status:"ERROR",message:"OLD PASSWORD IS NOT MATCHING"};
             callback(data);
         }else{
             user_id=rows[0].user_id;
-
             let sqlQuery=`UPDATE user set user_password='${req.body.user_newpassword}' 
             where user_id=${user_id}`;
             await DataBaseConnection.query(sqlQuery, function(error,rows){
                 if(rows!=="undefined"){
-                    data.data={status:"OK",message:"PASSWORD IS CHANGING"};
+                    data={status:"OK",message:"PASSWORD IS CHANGING"};
                     callback(data);
                 }
             });
@@ -75,22 +105,18 @@ userController.userCheckLogin=async function(req,callback){
     });
 }
 
-userController.forgetPassword=function(body){
-        promise=new Promise((resolve,reject)=>{
-            userController.emailExsits(body,function(data){
+userController.forgetPassword=async function(body,callback){
+            await userController.emailExsits(body,function(data){
                 if(data.status=="OK"){
-                    resolve(data);
+                    callback(data);
                 }else{
-                    resolve(data);
+                    callback(data);
                 }
             });
-        });
-
-        
 }
 
 userController.emailExsits=function(body,callback){
-    sqlQuery=`SELECT * FROM user where user_email='${body.user_email}' AND user_otptoken=${Number(body.user_otptoken)}`;
+    sqlQuery=`SELECT * FROM user where user_email='${body.user_email}'`;
     DataBaseConnection.query(sqlQuery,(error,rows,fields)=>{
         if(error){
                 console.log(error);
@@ -103,4 +129,63 @@ userController.emailExsits=function(body,callback){
         }
     });
 }
+
+userController.userForgetChangePassword=async function(req,callback){
+    let sqlQuery=`SELECT user_id FROM user where user_email='${req.body.user_email}'`;
+    await DataBaseConnection.query(sqlQuery,async function(error,rows){
+        if(rows.length==0){
+            data={status:"ERROR",message:"PASSWORD IS NOT UPDATING"};
+            callback(data);
+        }else{
+            user_id=rows[0].user_id;
+            let sqlQuery=`UPDATE user set user_password='${req.body.user_newpassword}' 
+            where user_id=${user_id}`;
+            await DataBaseConnection.query(sqlQuery, function(error,rows){
+                if(rows!=="undefined"){
+                    data={status:"OK",message:"PASSWORD IS CHANGING"};
+                    callback(data);
+                }
+            });
+        }
+    });
+}
+
+userController.otpTokenGenerator=async function(email,callback){
+    otpToken=Math.floor(Math.random()*90000)+10000;
+    sqlQuery=`UPDATE user SET user_otptoken=${otpToken} where user_email='${email}'`;
+    await DataBaseConnection.query(sqlQuery,function(error,result){
+        if(error){
+            return callback(data={status:"ERROR",message:""});
+        }
+        console.log("RESULT",result);
+        if(result.affectedRows==1){
+            userController.tokenClear(email);
+            return callback(data={status:"OK",message:"",user_otptoken:otpToken});
+        }
+    });
+}
+
+userController.tokenClear=function(email){
+    setTimeout(function(){
+        console.log("CALLED",email);
+        sqlQuery=`UPDATE user SET user_otptoken=NULL where user_email='${email}'`;
+        DataBaseConnection.query(sqlQuery,function(error,result){
+        });
+        clearTimeout();
+    },180000);
+}
+
+userController.tokenCompare=async function(body,callback){
+
+    let sqlQuery=`SELECT * from user where user_email='${body.user_email}' AND user_otptoken=${body.user_otptoken}`;
+    await DataBaseConnection.query(sqlQuery,function(error,rows){
+        if(rows.length<=0){
+            return callback(data={status:"ERROR",message:"TOKEN NOT MATCH"});
+        }else{
+            return callback(data={status:"OK",message:"TOKEN MATCH"});
+        }
+    });
+}
+
+
 module.exports=userController;

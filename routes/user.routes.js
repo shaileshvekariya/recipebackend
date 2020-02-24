@@ -5,12 +5,8 @@ const router=express.Router();
 const bodyParser = require('body-parser');
 router.use(bodyParser.urlencoded({ extended: true }));
 
-
-const DataBaseConnection=require('../middleware/connection');
 const middleware=require('../middleware/middleware');
 const userController=require('../controller/user.controller');
-
-
 
 // Login API
 router.post('/login',middleware.userCheckLogin,function(req,res){
@@ -37,24 +33,46 @@ router.post('/register',middleware.validationCheck,middleware.registerCheck,func
             });
 });
 
-// userChangePassword
-router.post('/userchangepassword',middleware.verifyToken,function(req,res){
-});
-
 // Login Forget API
-router.post('/login/forget',middleware.userCheckLogin,function(req,res){
+router.post('/login/forget',middleware.emailCheck,function(req,res){
+
+    userController.otpTokenGenerator(req.body.user_email,function(data){
+        return  res.send(data);
+    });
 });
 
 // Foget Token Change API
-router.post('/forget/token/chack',async function(req,res){
+router.put('/forget/token/check',middleware.tokenCompare,function(req,res){
     let start=async function() {
-        return userController.forgetPassword(req.body).then(data=> {console.log(data);return data;})
+        data=await userController.forgetPassword(req.body,async function(data){
+            if(data.status=="OK"){
+                await userController.userForgetChangePassword(req,function(dataPC){
+                    return res.send(dataPC);
+                });
+            }else{
+                return res.send(data);
+            }
+        });
     };
-    
-    data=await start();    
-    // return google.login(data.username, data.password).then(token => { return token } )
+    start();
+});
 
-    
+// userChangePassword
+router.put('/userchangepassword',middleware.verifyTokenChange,function(req,res){
+});
+
+// Profile
+router.post('/profile',middleware.verifyToken,function(req,res){
+    userController.profile(req.body.user_email,function(data){
+        res.send(data);
+    });
+});
+
+// Profile Updated
+router.put('/profile/updated',middleware.verifyToken,function(req,res){
+    userController.profileUpdated(req.body.user_email,req.body.user_profile,function(data){
+        res.send(data);
+    });
 });
 
 module.exports=router;
