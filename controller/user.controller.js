@@ -34,7 +34,7 @@ userController.userVerifyToken=function(token_header,email,callback){
         if(rows.length>=1){
             return callback (data={status:"OK",message:"TOKEN IS AVAILABLE"});
         }else{
-            return callback (data={status:"ERROR",message:"USER IS AVAILABLE TOKEN IS CHANGE"});
+            return callback (data={status:"ERROR",message:"USER EMAIL OR TOKEN IS NOT VALID"});
         }
     });
 };
@@ -100,7 +100,7 @@ userController.userCheckLogin=async function(req,callback){
         if(rows.length==0){
             callback(data={status:"ERROR",message:"USER NOT EXISTS"});
         }else{
-            callback(data={status:"OK",message:"",user_authtoken:rows[0].user_authtoken});
+            callback(data={status:"OK",message:"USER EXISTS",user_email:rows[0].user_email,user_authtoken:rows[0].user_authtoken});
         }
     });
 }
@@ -115,11 +115,11 @@ userController.forgetPassword=async function(body,callback){
             });
 }
 
-userController.emailExists=function(body,callback){
+userController.emailExists=async function(body,callback){
     sqlQuery=`SELECT * FROM user where user_email='${body.user_email}'`;
-    DataBaseConnection.query(sqlQuery,(error,rows,fields)=>{
+    await DataBaseConnection.query(sqlQuery,(error,rows,fields)=>{
         if(error){
-                console.log(error);
+                console.log("ERROR",error);
         }else{
             if(rows.length==0){
                 return callback (data={status:"ERROR",message:"USER TOKEN IS NOT VALID"});
@@ -151,17 +151,28 @@ userController.userForgetChangePassword=async function(req,callback){
 }
 
 userController.otpTokenGenerator=async function(email,callback){
-    otpToken=Math.floor(Math.random()*90000)+10000;
-    sqlQuery=`UPDATE user SET user_otptoken=${otpToken} where user_email='${email}'`;
-    await DataBaseConnection.query(sqlQuery,function(error,result){
-        if(error){
-            return callback(data={status:"ERROR",message:""});
-        }
-        console.log("RESULT",result);
-        if(result.affectedRows==1){
-            userController.tokenClear(email);
-            return callback(data={status:"OK",message:"",user_otptoken:otpToken});
-        }
+
+    otpTokenPromise=new Promise(async function(resolve,reject){
+
+        otpToken=Math.floor(Math.random()*90000)+10000;
+        sqlQuery=`UPDATE user SET user_otptoken=${otpToken} where user_email='${email}'`;
+            await DataBaseConnection.query(sqlQuery,async function(error,result){
+            
+            console.log("RESULT",result);
+            if(result.affectedRows==1){
+                    userController.tokenClear(email);
+                    resolve(data={status:"OK",message:"",user_otptoken:otpToken});
+            }
+            if(error){
+                    reject(data={status:"ERROR",message:""});
+            }
+        });
+    });
+
+    otpTokenPromise.then(function(data){
+        callback(data);
+    },function(error){
+        callback(error );
     });
 }
 

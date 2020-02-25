@@ -1,6 +1,7 @@
 const jwt=require('jsonwebtoken');
 const DataBaseConnection=require('./connection');
 const validationUser=require('../util/commonFunction');
+const userController=require('../controller/user.controller');
 
 middleware={};
 
@@ -82,7 +83,6 @@ middleware.verifyTokenChange=async function(req,res,next){
 }
 
 middleware.userCheckLogin=async function(req,res,next){
-    
     new Promise(async (resolve,reject)=>{
         userController.userCheckLogin(req,function(data){
             resolve(data);
@@ -94,7 +94,6 @@ middleware.userCheckLogin=async function(req,res,next){
 }
 
 middleware.emailCheck=async function(req,res,next){
-    console.log(req.body);
     data=await userController.emailExists(req.body,function(data){
         if(data.status=="OK"){
             next();

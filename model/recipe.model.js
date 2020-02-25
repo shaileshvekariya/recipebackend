@@ -1,0 +1,13 @@
+Recipe={
+    recipe_name:String,
+    type_id:Number,
+    recipe_level:String,
+    recipe_cookingtime:String,
+    recipe_ingredients:String,
+    recipe_steps:String,
+    recipe_people:Number,
+    recipe_image:String,
+    user_id:Number,
+    recipe_description:String
+}
+module.exports=Recipe;

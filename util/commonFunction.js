@@ -2,7 +2,7 @@ user=require('../model/user.model');
 
 
 function validationUser(req){
-    data={};
+    let data={};
 
     user.user_firstname = req.body.user_firstname.trim().toLowerCase();
     user.user_lastname  = req.body.user_lastname.trim().toLowerCase();
@@ -52,5 +52,6 @@ function validationUser(req){
     }
    return data;
 }
+
 
 module.exports=validationUser;

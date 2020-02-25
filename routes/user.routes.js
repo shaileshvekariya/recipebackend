@@ -34,9 +34,9 @@ router.post('/register',middleware.validationCheck,middleware.registerCheck,func
 });
 
 // Login Forget API
-router.post('/login/forget',middleware.emailCheck,function(req,res){
-
-    userController.otpTokenGenerator(req.body.user_email,function(data){
+router.post('/login/forget',middleware.emailCheck,async function(req,res){
+    await userController.otpTokenGenerator(req.body.user_email,function(data){
+        console.log(data);
         return  res.send(data);
     });
 });
