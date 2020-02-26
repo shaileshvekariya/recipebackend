@@ -104,6 +104,7 @@ middleware.emailCheck=async function(req,res,next){
 }
 
 middleware.verifyToken=async function(req,res,next){
+
     const token_header=req.headers['user_authtoken'];
     const email=req.headers['user_email'];
     
@@ -122,8 +123,8 @@ middleware.verifyToken=async function(req,res,next){
     }
 }
 
-middleware.tokenCompare=function(req,res,next){
-    userController.tokenCompare(req.body,function(data){
+middleware.tokenCompare=async function(req,res,next){
+    await userController.tokenCompare(req.body,function(data){
         if(data.status=="OK"){
             next();
         }else{
@@ -131,4 +132,5 @@ middleware.tokenCompare=function(req,res,next){
         }
     });
 }
+
 module.exports=middleware;

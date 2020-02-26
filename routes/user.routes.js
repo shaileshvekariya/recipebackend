@@ -42,7 +42,7 @@ router.post('/login/forget',middleware.emailCheck,async function(req,res){
 });
 
 // Foget Token Change API
-router.put('/forget/token/check',middleware.tokenCompare,function(req,res){
+router.post('/forget/token/check',middleware.tokenCompare,function(req,res){
     let start=async function() {
         data=await userController.forgetPassword(req.body,async function(data){
             if(data.status=="OK"){
@@ -58,7 +58,7 @@ router.put('/forget/token/check',middleware.tokenCompare,function(req,res){
 });
 
 // userChangePassword
-router.put('/userchangepassword',middleware.verifyTokenChange,function(req,res){
+router.post('/userchangepassword',middleware.verifyTokenChange,function(req,res){
 });
 
 // Profile
