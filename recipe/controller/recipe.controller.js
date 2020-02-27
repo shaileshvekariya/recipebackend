@@ -1,5 +1,5 @@
-validationRecipe = require('../util/recipeValidation');
-recipeUtil = require('../util/recipeUtils');
+validationRecipe = require('../../util/recipeValidation');
+recipeUtil = require('../utils/recipeUtils');
 recipeController = {};
 
 // Validation Recipe And Add Recipe
@@ -60,6 +60,17 @@ recipeController.favorite = async function (body, callback) {
 
     }
 }
+
+recipeController.userFavoriteRecipe=async function(email,callback){
+    try {
+        await recipeUtil.userFavoriteRecipe(email,function(data){
+            return callback(data);
+        });
+    } catch (error) {
+        
+    }
+}
+
 
 // ALL RECIPE GETS
 recipeController.userRecipes = async function (email, callback) {

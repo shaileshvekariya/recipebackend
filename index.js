@@ -4,14 +4,12 @@ const app=express();
 const bodyParser = require('body-parser');
 app.use(bodyParser.urlencoded({ extended: false }));
 
-// Globel Variable
+// Globel Variable Any App to Access
 app.set("status","CANCEL");
 
-// Routes Import
-const user=require('./routes/user.routes');
-const recipe=require('./routes/recipe.routes');
-
-
+// Routes
+const user=require('./user/routes/user.routes');
+const recipe=require('./recipe/routes/recipe.routes');
 
 // Router Assign User
 app.use('/user',user);

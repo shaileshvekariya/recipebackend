@@ -1,4 +1,4 @@
-const recipe=require('../model/recipe.model');
+const recipe=require('../recipe/model/recipe.model');
 
 function validationRecipe(body){
     let data={};
