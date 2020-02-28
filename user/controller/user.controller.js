@@ -1,5 +1,6 @@
 const DataBaseConnection = require('../../connection/connection');
 const userUtils = require('../utils/userutils');
+const sendMail = require('../../nodeMailer/SendMail');
 
 userController = {};
 
@@ -55,13 +56,26 @@ userController.emailExists = async function (email, callback) {
 userController.otpTokenGenerator = async function (email, callback) {
     try {
         let otpToken = Math.floor(Math.random() * 90000) + 10000;
-        let sqlQuery = `UPDATE user SET user_otptoken=${otpToken} where user_email='${email}'`;
-        await DataBaseConnection.query(sqlQuery, async function (error, result) {
-            if (!error) {
-                if (result.affectedRows == 1) {
-                    userController.tokenClear(email);
-                    return callback(data = { status: "OK", message: "OTP TOKEN SAVED", user_otptoken: otpToken });
-                }
+        let mailOptions = {
+            from: 'Recipe House<shailesh.vekariya.sa@gmail.com>',
+            to: "ajay.vandra.sa@gmail.com",
+            subject: "Reset Your Password",
+            html: `<h1>Welcome Recipe House</h1> <h2 style="color:red;">Do not Share Any Person</h2>
+             <h4 style="color:red;">Only 1 Minute To a  Valid a Token.</h4>
+             <h2>Please Enter a OTP Token in your Mobile And Reset Your Password:<h2> 
+             <u><h2 style="color:blue;">OTP: ${otpToken}</h2></u>`
+        };
+        await sendMail(mailOptions,async function (data) {
+            if (data) {
+                let sqlQuery = `UPDATE user SET user_otptoken=${otpToken} where user_email='${email}'`;
+                await DataBaseConnection.query(sqlQuery, async function (error, result) {
+                    if (!error) {
+                        if (result.affectedRows == 1) {
+                            userController.tokenClear(email);
+                            return callback(data = { status: "OK", message: "OTP TOKEN SAVED", user_otptoken: otpToken });
+                        }
+                    }
+                });
             }
         });
     } catch (error) {
@@ -72,12 +86,11 @@ userController.otpTokenGenerator = async function (email, callback) {
 // User Genrate Token And Set Timeout to Expired Token
 userController.tokenClear = function (email) {
     setTimeout(function () {
-        console.log("CALLED", email);
         sqlQuery = `UPDATE user SET user_otptoken=NULL where user_email='${email}'`;
         DataBaseConnection.query(sqlQuery, function (error, result) {
         });
         clearTimeout();
-    }, 180000);
+    },60000);
 }
 
 // USER OTP TOKEN COMPARE MATCH OR NOT 
@@ -106,7 +119,7 @@ userController.userForgetChangePassword = async function (req, callback) {
     await DataBaseConnection.query(sqlQuery, async function (error, rows) {
         if (rows.length == 0) {
             data = { status: "ERROR", message: "PASSWORD IS NOT UPDATING" };
-            callback(data);
+            return callback(data);
         } else {
             user_id = rows[0].user_id;
             let sqlQuery = `UPDATE user set user_password='${req.body.user_newpassword}' 
@@ -114,7 +127,7 @@ userController.userForgetChangePassword = async function (req, callback) {
             await DataBaseConnection.query(sqlQuery, function (error, rows) {
                 if (rows !== "undefined") {
                     data = { status: "OK", message: "PASSWORD IS CHANGING" };
-                    callback(data);
+                    return callback(data);
                 }
             });
         }
@@ -131,7 +144,7 @@ userController.userVerifyToken = async function (token_header, callback) {
                 if (rows.length >= 1) {
                     return callback(data = { status: "OK", message: "TOKEN IS AVAILABLE" });
                 } else {
-                    return callback(data = { status: "ERROR", message: "USER EMAIL OR TOKEN IS NOT VALID" });
+                    return callback(data = { status: "ERROR", message: "TOKEN IS NOT VALID" });
                 }
             }
         });
@@ -140,7 +153,7 @@ userController.userVerifyToken = async function (token_header, callback) {
 };
 
 // Auth Token And Email Verified
-userController.userVerifyTokenAndEmail=async function(user_authtoken,email,callback){
+userController.userVerifyTokenAndEmail = async function (user_authtoken, email, callback) {
     try {
         sqlQuery = `SELECT * FROM user where user_authtoken='${user_authtoken}' AND user_email='${email}'`;
         await DataBaseConnection.query(sqlQuery, (error, rows) => {
@@ -148,12 +161,12 @@ userController.userVerifyTokenAndEmail=async function(user_authtoken,email,callb
                 if (rows.length >= 1) {
                     return callback(data = { status: "OK", message: "TOKEN IS AVAILABLE" });
                 } else {
-                    return callback(data = { status: "ERROR", message: "PLEASE ENTER A REGISTER GMAIL ID"});
+                    return callback(data = { status: "ERROR", message: "PLEASE ENTER A REGISTER GMAIL ID" });
                 }
             }
         });
     } catch (error) {
-        
+
     }
 }
 
@@ -214,4 +227,12 @@ userController.profileUpdated = function (email, user_profile, callback) {
         }
     });
 }
+
+// UserToken To Get User_id
+userController.getUserIdToAuthToken = function (auth_token, callback) {
+    DataBaseConnection.query(`SELECT user_id FROM user where user_authtoken='${auth_token}'`, function (error, result) {
+        return callback(result[0].user_id);
+    });
+}
+
 module.exports = userController;

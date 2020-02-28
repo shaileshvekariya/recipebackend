@@ -1,6 +1,6 @@
 const mysql=require('mysql');
 
-var DataBaseConnection=mysql.createConnection({
+const DataBaseConnection=mysql.createConnection({
         host:'localhost',
         user:'root',
         password:'',

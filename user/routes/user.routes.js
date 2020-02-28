@@ -25,10 +25,10 @@ router.post('/register', usermiddleware.validationCheck, usermiddleware.register
 router.post('/login/forget', usermiddleware.emailCheck, async function (req, res) {
     try {
         await userController.otpTokenGenerator(req.body.user_email, function (data) {
-            return res.send(data);
+            return res.status(200).send(data);
         });
     } catch (error) {
-        return res.send(data = { status: "ERROR", message: "ROUTE ERROR" });
+        return res.status(500).send(data = { status: "ERROR", message: "ROUTE ERROR" });
     }
 });
 
@@ -36,8 +36,8 @@ router.post('/login/forget', usermiddleware.emailCheck, async function (req, res
 // Foget Password OTP Token Check API AND ChangePassword API (OK)
 router.post('/forget/token/check', usermiddleware.emailCheck, usermiddleware.userNewPasswordCheckValidation, usermiddleware.otpTokenCompare, async function (req, res) {
     try {
-        await userController.userForgetChangePassword(req, function (dataPC) {
-            return res.send(dataPC);
+        await userController.userForgetChangePassword(req, function (data) {
+            return res.status(200).send(data);
         });
     } catch (error) {
     }
@@ -49,9 +49,9 @@ router.post('/userchangepassword', commonMiddleware.verifyAuthTokenAndEmail, use
     try {
         await userController.userCheckChangePassword(req.body, req.headers, function (data) {
             if (data.status == "OK") {
-                res.send(data);
+                res.status(200).send(data);
             } else {
-                res.send(data);
+                res.status(400).send(data);
             }
         });
     } catch (error) {

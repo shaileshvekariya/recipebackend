@@ -14,6 +14,7 @@ function validationRecipe(body){
     recipe.recipe_description=body.recipe_description;
 
     let regexRecipe = /^[A-Za-z]+$/;
+    
 
     
     if((recipe.recipe_name.length<=2 
@@ -37,22 +38,22 @@ function validationRecipe(body){
         return data.data4={status:"ERROR",message:"RECIPE COOKINGTIME NOT VALID"}
     }
 
-    if((recipe.recipe_ingredients).length<=0){
-        return data.data5={status:"ERROR",message:"RECIPE INGREDIENTS NOT ENTER"};
+    if((recipe.recipe_ingredients).length<=50){
+        return data.data5={status:"ERROR",message:"ADD RECIPE INGREDIENTS MORE CONTENT"};
     }
 
-    if((recipe.recipe_steps).length<=0){
-        return data.data6={status:"ERROR",message:"RECIPE STEP NOT ENTER"};
+    if((recipe.recipe_steps).length<=50){
+        return data.data6={status:"ERROR",message:"ADD MORE RECIPE STEP ENTER"};
     }
 
     if(isNaN(recipe.recipe_people)){
         return data.data7={status:"ERROR",message:"RECIPE PEOPLE IS NOT VALID"}
     }
 
-    if((!isNaN(recipe.recipe_image) || recipe.recipe_image.lastIndexOf('.')==-1) ||
-    !["jpeg","jpg","png"].includes(recipe.recipe_image.substring(recipe.recipe_image.lastIndexOf('.')+ 1).toLowerCase())){
-        return data.data8={status:"ERROR",message:"RECIPE IMAGE IS NOT VALID"}
-    }
+    // if((!isNaN(recipe.recipe_image) || recipe.recipe_image.lastIndexOf('.')==-1) ||
+    // !["jpeg","jpg","png"].includes(recipe.recipe_image.substring(recipe.recipe_image.lastIndexOf('.')+ 1).toLowerCase())){
+    //     return data.data8={status:"ERROR",message:"RECIPE IMAGE IS NOT VALID"}
+    // }
 
     if(recipe.recipe_description.length<=10 || recipe.recipe_description.length>=50){
         return data.data9={status:"ERROR",message:"RECIPE DESCRIPTION CONTENT LENGTH NOT MATCH"};

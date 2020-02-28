@@ -8,7 +8,7 @@ usermiddleware = {};
 usermiddleware.userCheckLogin = async function (req, res, next) {
     try {
         await userController.userCheckLogin(req.body, function (data) {
-            res.send(data);
+            res.status(200).send(data);
             next();
         });
     } catch (error) {
@@ -23,7 +23,7 @@ usermiddleware.validationCheck = async function (req, res, next) {
             if (errorCount == 0) {
                 next();
             } else {
-                return res.send(data);
+                return res.status(400).send(data);
             }
         });
     } catch (error) {
@@ -39,11 +39,11 @@ usermiddleware.registerCheck = async function (req, res, next) {
                     if (data.status == "OK") {
                         next();
                     } else {
-                        res.send(data);
+                        res.status(400).send(data);
                     }
                 });
             } else {
-                res.send(data = { status: "ERROR", message: "EMAIL ID IS NOT EXISTS" });
+                res.status(400).send(data = { status: "ERROR", message: "EMAIL ID IS NOT EXISTS" });
             }
         });
     } catch (error) {
@@ -57,7 +57,7 @@ usermiddleware.emailCheck = async function (req, res, next) {
         if (data.status == "OK") {
             next();
         } else {
-            return res.send(data);
+            return res.status(400).send(data);
         }
     });
 }
@@ -69,11 +69,11 @@ usermiddleware.userNewPasswordCheckValidation = async function (req, res, next) 
             if (data.status == "OK") {
                 next();
             } else {
-                return res.send(data);
+                return res.status(400).send(data);
             }
         });
     } catch (error) {
-        return res.send(data = { status: "ERROR", message: "MIDDLE PASSWORD CHANGE ERROR HENDLER" });
+        return res.status(500).send(data = { status: "ERROR", message: "MIDDLE PASSWORD CHANGE ERROR HENDLER" });
     }
 }
 
@@ -82,13 +82,13 @@ usermiddleware.userNewPasswordCheckValidation = async function (req, res, next) 
 usermiddleware.otpTokenCompare = async function (req, res, next) {
     try {
         if (Object.entries(req.body).length == 0) {
-            return res.send({ status: "ERROR", message: "NOT ACCEPTED REQUEST ON SERVER" });
+            return res.status(400).send({ status: "ERROR", message: "NOT ACCEPTED REQUEST ON SERVER" });
         } else {
             await userController.otpTokenCompare(req.body, function (data) {
                 if (data.status == "OK") {
                     next();
                 } else {
-                    return res.send(data);
+                    return res.status(400).send(data);
                 }
             });
         }

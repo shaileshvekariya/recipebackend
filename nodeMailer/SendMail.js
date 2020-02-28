@@ -1,23 +1,23 @@
 const nodemailer = require('nodemailer');
 var transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-      user: 'youremail@gmail.com',
-      pass: 'yourpassword'
-    }
-  });
-  
-  var mailOptions = {
-    from: 'youremail@gmail.com',
-    to: 'myfriend@yahoo.com',
-    subject: 'Sending Email using Node.js',
-    text: 'That was easy!'
-  };
-  
-  transporter.sendMail(mailOptions, function(error, info){
+  service: 'gmail',
+  auth: {
+    user: 'shailesh.vekariya.sa@gmail.com',
+    pass: 'shailesh@1solution'
+  }
+});
+
+// Send Mail Function Using To Otp Register And User Register
+function sendMail(mailOptions,callback) {
+  transporter.sendMail(mailOptions, function (error, info) {
     if (error) {
-      console.log(error);
+      console.log("MAIL SEND ERROR");
+      return null;
     } else {
-      console.log('Email sent: ' + info.response);
+      console.log(info.response);
+      return callback('Email Sent:' + info.response);
     }
   });
+}
+
+module.exports=sendMail;

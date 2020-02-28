@@ -19,40 +19,75 @@ router.post('/edit', commonMiddleware.verifyAuthToken, recipeMiddleware.validati
 
 // Recipe Deleted
 router.post('/delete', commonMiddleware.verifyAuthToken, async function (req, res) {
-    await recipeController.recipeDelete(req.body.recipe_id, function (data) {
-        res.send(data);
-    });
+    try {
+        await recipeController.recipeDelete(req.body.recipe_id, function (data) {
+            if (data.status == "OK") {
+                res.status(200).send(data);
+            } else {
+                res.status(400).send(data);
+            }
+        });
+    } catch (error) {
+
+    }
 });
 
 //Recipes Get (Per Request 10 Result)
-router.post('/getrecipes', async function (req, res) {
-    await recipeController.recipesGets(req.body.count, function (data) {
-        res.send(data);
-    });
+router.get('/getrecipes', commonMiddleware.verifyTokenAndGetRecipesDetails, async function (req, res) {
+    try {
+        await recipeController.recipesGets(req.query.count, res.user, function (data) {
+            if (data.status == "ERROR") {
+                res.status(400).send(data);
+            } else {
+                res.status(200).send(data);
+            }
+        });
+    } catch (error) {
+
+    }
 });
 
 // Single Recipe
-router.post('/getrecipe', commonMiddleware.verifyAuthToken, function (req, res) {
-    recipeController.recipesGet(req.body.recipe_id, function (data) {
-        res.send(data);
-    });
+router.get('/getrecipe', commonMiddleware.verifyTokenAndGetRecipesDetails, async function (req, res) {
+    try {
+        await recipeController.recipesGet(Number(req.query.recipe_id),res.user, function (data) {
+            if (data.status == "ERROR") {
+                res.status(400).send(data);
+            } else {
+                res.status(200).send(data);
+            }
+        });
+    } catch (error) {
+    }
 });
 
 // Select Favorite Reciped (Removed And Add)
 router.post('/select/favorite', commonMiddleware.verifyAuthToken, async function (req, res) {
-    await recipeController.favorite(req.body, (data) => {
-        res.send(data);
-    });
+    try {
+        await recipeController.favorite(req.body, (data) => {
+            if (data.status == "ERROR") {
+                res.status(400).send(data);
+            } else {
+                res.status(200).send(data);
+            }
+        });
+    } catch (error) {
+
+    }
 });
 
 // User Favorite Recipes Gets
-router.post('/userfavorites',commonMiddleware.verifyAuthToken,async function(req,res){
+router.post('/userfavorites', commonMiddleware.verifyAuthToken, async function (req, res) {
     try {
-        await recipeController.userFavoriteRecipe(req.body.user_email,function(data){
-            console.log(data);
+        await recipeController.userFavoriteRecipe(req.body.user_email, function (data) {
+            if (data.status == "ERROR") {
+                res.status(400).send(data);
+            } else {
+                res.status(200).send(data);
+            }
         });
     } catch (error) {
-        
+
     }
 });
 
@@ -60,16 +95,16 @@ router.post('/userfavorites',commonMiddleware.verifyAuthToken,async function(req
 router.post('/myrecipes', commonMiddleware.verifyAuthToken, async function (req, res) {
     try {
         await recipeController.userRecipes(req.body.user_email, function (data) {
-            return res.send(data);
+            return res.status(200).send(data);
         });
     } catch (error) {
     }
 });
 
 // User Perticular Recipe Get
-router.post('/myrecipe', commonMiddleware.verifyAuthToken, async function (req, res) {
-    await recipeController.userRecipe(req.body.recipe_id, function (data) {
-        return res.send(data);
+router.get('/myrecipe', commonMiddleware.verifyAuthToken, async function (req, res) {
+    await recipeController.userRecipe(req.query.recipe_id, function (data) {
+        return res.status(200).send(data);
     });
 });
 
@@ -77,10 +112,14 @@ router.post('/myrecipe', commonMiddleware.verifyAuthToken, async function (req, 
 router.post('/comment', commonMiddleware.verifyAuthToken, recipeMiddleware.commentValidation, async function (req, res) {
     try {
         await recipeController.addComment(req.body, function (data) {
-            return res.send(data);
+            if (data.status == "ERROR") {
+                return res.status(400).send(data);
+            } else {
+                return res.status(200).send(data);
+            }
         });
     } catch (error) {
-        return res.send(data = { status: "ERROR", message: "COMMENT ADDED ERROR" });
+        return res.status(500).send(data = { status: "ERROR", message: "COMMENT ADDED ERROR" });
     }
 });
 
