@@ -39,6 +39,7 @@ recipeMiddleware.commentValidation = async function (req, res, next) {
     try {
         await recipeController.commentValidate(req.body.comment_text, function (data) {
             if (data.status == "OK") {
+                res.comment_status=req.query.comment_status;
                 next();
             } else {
                 return res.status(400).send(data);

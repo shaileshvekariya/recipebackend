@@ -17,6 +17,7 @@ router.post('/login', usermiddleware.userCheckLogin, function (req, res) {
 // Register USER API (OK)
 router.post('/register', usermiddleware.validationCheck, usermiddleware.registerCheck, async function (req, res) {
     await userController.registerUser(req.body, function (data) {
+        console.log(data);
         res.send(data);
     });
 });

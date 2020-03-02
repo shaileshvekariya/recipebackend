@@ -1,4 +1,5 @@
 const DataBaseConnection = require('../../connection/connection');
+const crypto = require('crypto');
 const userUtils = require('../utils/userutils');
 const sendMail = require('../../nodeMailer/SendMail');
 
@@ -122,7 +123,8 @@ userController.userForgetChangePassword = async function (req, callback) {
             return callback(data);
         } else {
             user_id = rows[0].user_id;
-            let sqlQuery = `UPDATE user set user_password='${req.body.user_newpassword}' 
+            let user_password=crypto.createHash('md5').update(req.body.user_newpassword).digest('hex');
+            let sqlQuery = `UPDATE user set user_password='${user_password}' 
             where user_id=${user_id}`;
             await DataBaseConnection.query(sqlQuery, function (error, rows) {
                 if (rows !== "undefined") {
@@ -161,7 +163,7 @@ userController.userVerifyTokenAndEmail = async function (user_authtoken, email, 
                 if (rows.length >= 1) {
                     return callback(data = { status: "OK", message: "TOKEN IS AVAILABLE" });
                 } else {
-                    return callback(data = { status: "ERROR", message: "PLEASE ENTER A REGISTER GMAIL ID" });
+                    return callback(data = { status: "ERROR", message: "PLEASE ENTER A VALID REGISTER EMAIL ID" });
                 }
             }
         });
@@ -173,8 +175,11 @@ userController.userVerifyTokenAndEmail = async function (user_authtoken, email, 
 
 // User Check Change Password Or Updated Password
 userController.userCheckChangePassword = async function (body, headers, callback) {
+
+    let user_oldpassword=crypto.createHash('md5').update(body.user_oldpassword).digest('hex');
+
     let sqlQuery = `SELECT user_id FROM user where user_authtoken='${headers.user_authtoken}'
-    AND user_password='${body.user_oldpassword}'`;
+    AND user_password='${user_oldpassword}'`;
     await DataBaseConnection.query(sqlQuery, async function (error, rows) {
         if (rows.length == 0) {
             data = { status: "ERROR", message: "OLD PASSWORD IS NOT MATCHING" };
@@ -182,13 +187,14 @@ userController.userCheckChangePassword = async function (body, headers, callback
         } else {
             user_id = rows[0].user_id;
 
-            let sqlQueryOldPassCheck = `SELECT user_id FROM user where user_password='${body.user_newpassword}'`;
+            let user_newpassword=crypto.createHash('md5').update(body.user_newpassword).digest('hex');
+            let sqlQueryOldPassCheck = `SELECT user_id FROM user where user_password='${user_newpassword}'`;
             await DataBaseConnection.query(sqlQueryOldPassCheck, async function (error, rows) {
                 if (rows.length == 1) {
                     data = { status: "OK", message: "OLD PASSWORD AND NEW PASSWORD IS SAME PLEASE CHANGE NEW PASSWORD" };
                     return callback(data);
                 } else {
-                    let sqlQueryUpdate = `UPDATE user set user_password='${body.user_newpassword}' 
+                    let sqlQueryUpdate = `UPDATE user set user_password='${user_newpassword}' 
                       where user_id=${user_id}`;
                     await DataBaseConnection.query(sqlQueryUpdate, function (error, rows) {
                         if (rows !== "undefined") {

@@ -19,8 +19,7 @@ usermiddleware.userCheckLogin = async function (req, res, next) {
 usermiddleware.validationCheck = async function (req, res, next) {
     try {
         await commonFunction.validationUser(req.body, function (data) {
-            errorCount = Object.keys(data).length;
-            if (errorCount == 0) {
+            if (Object.keys(data).length == 0) {
                 next();
             } else {
                 return res.status(400).send(data);
@@ -33,7 +32,7 @@ usermiddleware.validationCheck = async function (req, res, next) {
 // Register Check To Email ID And Phone Number Is Duplicate
 usermiddleware.registerCheck = async function (req, res, next) {
     try {
-        await emailExistence.check(req.body.user_email,async (error, response) => {
+        await emailExistence.check(req.body.user_email,async function(error, response){
             if (response) {
                 await userController.emailOrPhoneExists(req.body.user_email, req.body.user_phone, function (data) {
                     if (data.status == "OK") {

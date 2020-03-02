@@ -64,7 +64,6 @@ recipeController.recipesGet = async function (id,user,callback) {
             return callback(data);
         });    
     } catch (error) {
-        console.log(error);
         return callback({ status: "ERROR", message: "Recipe Controller All Sigle Recipe Get Error" });
     }
 }
@@ -123,7 +122,7 @@ recipeController.userRecipe = async function (id, callback) {
 
 // recipe comment validation check
 recipeController.commentValidate = function (comment_text, callback) {
-    if (comment_text.length <= 2) {
+    if (comment_text.length <= 2 || comment_text=="") {
         return callback(data = { status: "ERROR", message: "COMMENT IS NOT VALID" });
     } else {
         return callback(data = { status: "OK", message: "COMMENT IS VALID" });
@@ -138,6 +137,16 @@ recipeController.addComment = async function (body, callback) {
         });
     } catch (error) {
         return callback({ status: "ERROR", message: "Recipe Controller Add Comment Error" });
+    }
+}
+
+// only Show Comment Perticular recipe ID
+recipeController.showComment=async function(id,callback){
+    try {
+        recipeUtil.commentShow(id,function(data){
+            return callback(data);
+        });
+    } catch (error) {
     }
 }
 

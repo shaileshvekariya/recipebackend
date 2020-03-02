@@ -1,13 +1,15 @@
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 const user = require('../model/user.model');
 const DataBaseConnection = require('../../connection/connection');
 
 
-userUtils = {};
+const userUtils = {};
 
 // Only Check To User Exists Or Not Using Login API
 userUtils.userCheckLogin = async function (body, callback) {
-    let sqlQuery = `SELECT user_authtoken,user_email FROM user where user_email='${body.user_email}' AND user_password='${body.user_password}'`;
+    let user_password=crypto.createHash('md5').update(body.user_password).digest('hex');
+    let sqlQuery = `SELECT user_authtoken,user_email FROM user where user_email='${body.user_email}' AND user_password='${user_password}'`;
     await DataBaseConnection.query(sqlQuery, (error, rows, fields) => {
         if (rows.length == 0) {
             callback(data = { status: "ERROR", message: "USER NOT EXISTS" });
@@ -25,17 +27,17 @@ userUtils.emailOrPhoneExists = async function (email, phone, callback) {
         let checkQueryEmail = `SELECT * FROM user where user_email='${email}'`;
         await DataBaseConnection.query(checkQueryEmail, function (err, result) {
             if (result.length == 1) {
-                data.data1 = { status: "ERROR", message: "User Email Already Exists" };
+                data.data1 = { status: "ERROR", message: "User email already Exists" };
             }
         });
 
         checkQuery = `SELECT * FROM user where user_phone=${phone}`;
         await DataBaseConnection.query(checkQuery, function (err, result) {
             if (result.length == 1) {
-                data.data2 = { status: "ERROR", message: "Phone Number Already Exists" };
+                data.data2 = { status: "ERROR", message: "Phone number already Exists" };
             }
-            return callback(data);
         });
+        return callback(data);
     } catch (error) {
     }
 }
@@ -43,22 +45,27 @@ userUtils.emailOrPhoneExists = async function (email, phone, callback) {
 // Inserted In DataBase User Register Value
 userUtils.registerUser = async function (body, callback) {
     try {
-
         user.user_firstname = body.user_firstname.trim().toLowerCase();
         user.user_lastname = body.user_lastname.trim().toLowerCase();
         user.user_email = body.user_email.trim();
         user.user_phone = Number(body.user_phone.trim());
-        user.user_password = body.user_password.trim();
+
+        user.user_password=crypto.createHash('md5').update(body.user_password).digest('hex');
+
+        // user.user_password = body.user_password;
+
         user.user_gender = body.user_gender.trim().toLowerCase();
 
         const token = jwt.sign({ user: 'user' }, 'token');
         user.user_authtoken = token;
+
 
         let sqlQuery = "INSERT INTO user SET ?";
         await DataBaseConnection.query(sqlQuery, user, (error) => {
             if (!error) {
                 return callback({ status: "OK", message: "RECORD SUBMITED", user_authtoken: user.user_authtoken });
             }
+            console.log(error);
         });
     } catch (error) {
         return callback({ status: "ERROR", message: "Not Inserted" });
