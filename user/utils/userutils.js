@@ -36,8 +36,8 @@ userUtils.emailOrPhoneExists = async function (email, phone, callback) {
             if (result.length == 1) {
                 data.data2 = { status: "ERROR", message: "Phone number already Exists" };
             }
+            return callback(data);
         });
-        return callback(data);
     } catch (error) {
     }
 }

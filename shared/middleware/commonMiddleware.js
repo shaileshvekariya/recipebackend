@@ -6,6 +6,8 @@ commonMiddleware.verifyAuthToken = async function (req, res, next) {
     // if (Object.entries(req.body).length == 0) {
     //     return res.send({ status: "OK", message: "PLEASE SEND A DATA" });
     // }
+    console.log(req.body.recipe_description);
+
     const token_header = req.headers['user_authtoken'];
     if (typeof token_header !== 'undefined') {
         await userController.userVerifyToken(token_header, function (data) {

@@ -8,6 +8,7 @@ recipeUtil.addRecipe = async function (body, auth_token, callback) {
         let sqlUserID = `SELECT user_id from user where user_authtoken='${auth_token}'`;
         await DataBaseConnection.query(sqlUserID, async function (error, result) {
 
+
             recipe.recipe_name = body.recipe_name;
             recipe.type_id = Number(body.type_id);
             recipe.recipe_level = body.recipe_level;

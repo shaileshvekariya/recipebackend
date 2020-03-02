@@ -1,8 +1,9 @@
 const express=require('express');
 const app=express();
+app.use(express.static('/home/shaileshvekariya/Documents/RECIPE_HOUSE/Recipe_House/images/'));
 
 const bodyParser = require('body-parser');
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.urlencoded({ extended: true ,limit:'10mb'}));
 
 // Globel Variable Any App to Access
 app.set("status","CANCEL");
