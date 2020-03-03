@@ -66,7 +66,7 @@ userController.otpTokenGenerator = async function (email, callback) {
              <h2>Please Enter a OTP Token in your Mobile And Reset Your Password:<h2> 
              <u><h2 style="color:blue;">OTP: ${otpToken}</h2></u>`
         };
-        await sendMail(mailOptions,async function (data) {
+        await sendMail(mailOptions, async function (data) {
             if (data) {
                 let sqlQuery = `UPDATE user SET user_otptoken=${otpToken} where user_email='${email}'`;
                 await DataBaseConnection.query(sqlQuery, async function (error, result) {
@@ -91,7 +91,7 @@ userController.tokenClear = function (email) {
         DataBaseConnection.query(sqlQuery, function (error, result) {
         });
         clearTimeout();
-    },60000);
+    }, 60000);
 }
 
 // USER OTP TOKEN COMPARE MATCH OR NOT 
@@ -123,7 +123,7 @@ userController.userForgetChangePassword = async function (req, callback) {
             return callback(data);
         } else {
             user_id = rows[0].user_id;
-            let user_password=crypto.createHash('md5').update(req.body.user_newpassword).digest('hex');
+            let user_password = crypto.createHash('md5').update(req.body.user_newpassword).digest('hex');
             let sqlQuery = `UPDATE user set user_password='${user_password}' 
             where user_id=${user_id}`;
             await DataBaseConnection.query(sqlQuery, function (error, rows) {
@@ -176,8 +176,7 @@ userController.userVerifyTokenAndEmail = async function (user_authtoken, email, 
 // User Check Change Password Or Updated Password
 userController.userCheckChangePassword = async function (body, headers, callback) {
 
-    let user_oldpassword=crypto.createHash('md5').update(body.user_oldpassword).digest('hex');
-
+    let user_oldpassword = crypto.createHash('md5').update(body.user_oldpassword).digest('hex');
     let sqlQuery = `SELECT user_id FROM user where user_authtoken='${headers.user_authtoken}'
     AND user_password='${user_oldpassword}'`;
     await DataBaseConnection.query(sqlQuery, async function (error, rows) {
@@ -187,7 +186,7 @@ userController.userCheckChangePassword = async function (body, headers, callback
         } else {
             user_id = rows[0].user_id;
 
-            let user_newpassword=crypto.createHash('md5').update(body.user_newpassword).digest('hex');
+            let user_newpassword = crypto.createHash('md5').update(body.user_newpassword).digest('hex');
             let sqlQueryOldPassCheck = `SELECT user_id FROM user where user_password='${user_newpassword}'`;
             await DataBaseConnection.query(sqlQueryOldPassCheck, async function (error, rows) {
                 if (rows.length == 1) {
@@ -222,14 +221,20 @@ userController.profileGet = async function (email, callback) {
 };
 
 // User Profile Image Upload And Updated
-userController.profileUpdated = function (email, user_profile, callback) {
-    sqlQuery = `UPDATE user SET user_profile='${user_profile}' where user_email='${email}'`;
-    DataBaseConnection.query(sqlQuery, (error, result) => {
-        if (error) {
-            return callback(data = { status: "ERROR", message: "PROFILE IS NOT UPDATED" });
-        }
-        if (result.affectedRows == 1) {
-            return callback(data = { status: "OK", message: "PROFILE IS UPDATED" });
+userController.profileUpdated =async function (email, user_profile, callback) {
+    await commonFunction.imageValidation(user_profile,async function (data) {
+        if (data.status !== "ERROR") {
+            sqlQuery = `UPDATE user SET user_profile='${user_profile}' where user_email='${email}'`;
+            await DataBaseConnection.query(sqlQuery, (error, result) => {
+                if (error) {
+                    return callback(data = { status: "ERROR", message: "PROFILE IS NOT UPDATED" });
+                }
+                if (result.affectedRows == 1) {
+                    return callback(data = { status: "OK", message: "PROFILE IS UPDATED" });
+                }
+            });
+        }else{
+            return callback(data);
         }
     });
 }

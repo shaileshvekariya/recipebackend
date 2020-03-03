@@ -71,6 +71,9 @@ recipeController.recipesGet = async function (id,user,callback) {
 // Add or Remove favorite recipe
 recipeController.favorite = async function (body, callback) {
     try {
+        if(body.favorite=="" && body.recipe_id==""){
+            return callback({ status: "ERROR", message: "Favorite and recipe_id is not get" });
+        }
         if (body.favorite == 'true') {
             await recipeUtil.addFavorite(body, function (data) {
                 return callback(data);
@@ -99,9 +102,9 @@ recipeController.userFavoriteRecipe = async function (email, callback) {
 
 
 // all perticular user all recipes get
-recipeController.userRecipes = async function (email, callback) {
+recipeController.userRecipes = async function (email,count, callback) {
     try {
-        await recipeUtil.userGetsRecipes(email, function (data) {
+        await recipeUtil.userGetsRecipes(email,count, function (data) {
             return callback(data);
         });
     } catch (error) {
@@ -122,7 +125,7 @@ recipeController.userRecipe = async function (id, callback) {
 
 // recipe comment validation check
 recipeController.commentValidate = function (comment_text, callback) {
-    if (comment_text.length <= 2 || comment_text=="") {
+    if (comment_text.length < 1  || comment_text=="") {
         return callback(data = { status: "ERROR", message: "COMMENT IS NOT VALID" });
     } else {
         return callback(data = { status: "OK", message: "COMMENT IS VALID" });

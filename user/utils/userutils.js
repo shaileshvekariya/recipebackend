@@ -9,12 +9,19 @@ const userUtils = {};
 // Only Check To User Exists Or Not Using Login API
 userUtils.userCheckLogin = async function (body, callback) {
     let user_password=crypto.createHash('md5').update(body.user_password).digest('hex');
-    let sqlQuery = `SELECT user_authtoken,user_email FROM user where user_email='${body.user_email}' AND user_password='${user_password}'`;
-    await DataBaseConnection.query(sqlQuery, (error, rows, fields) => {
+    let sqlQueryEmailCheck = `SELECT user_email FROM user where user_email='${body.user_email}'`;
+    await DataBaseConnection.query(sqlQueryEmailCheck, async (error, rows, fields) => {
         if (rows.length == 0) {
-            callback(data = { status: "ERROR", message: "USER NOT EXISTS" });
+            callback(data = { status: "ERROR", message: "Email id is not exists" });
         } else {
-            callback(data = { status: "OK", message: "USER EXISTS", user_email: rows[0].user_email, user_authtoken: rows[0].user_authtoken });
+            let sqlQuery = `SELECT user_authtoken,user_email FROM user where user_email='${body.user_email}' AND user_password='${user_password}'`;
+            await DataBaseConnection.query(sqlQuery, (error, rows, fields) => {
+                if (rows.length == 0) {
+                    callback(data = { status: "ERROR", message: "Password is Not matching" });
+                } else {
+                    callback(data = { status: "OK", message: "USER EXISTS", user_email: rows[0].user_email, user_authtoken: rows[0].user_authtoken });
+                }
+            });
         }
     });
 }

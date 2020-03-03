@@ -6,7 +6,6 @@ commonMiddleware.verifyAuthToken = async function (req, res, next) {
     // if (Object.entries(req.body).length == 0) {
     //     return res.send({ status: "OK", message: "PLEASE SEND A DATA" });
     // }
-    console.log(req.body.recipe_description);
 
     const token_header = req.headers['user_authtoken'];
     if (typeof token_header !== 'undefined') {
@@ -74,4 +73,11 @@ commonMiddleware.verifyTokenAndGetRecipesDetails = async function (req, res, nex
     }
 }
 
+commonMiddleware.bodyCheck=async function(req,res,next){
+    if(Object.entries(req.body).length==0){
+        res.status(400).send({status:"ERROR",message:"PLEASE BODY IS NULL SEND DATA"});
+    }else{
+        next();
+    }
+}
 module.exports = commonMiddleware;

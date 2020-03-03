@@ -11,11 +11,11 @@ const userController = require('../controller/user.controller');
 const commonMiddleware = require('../../shared/middleware/commonMiddleware');
 
 // Login API (OK)
-router.post('/login', usermiddleware.userCheckLogin, function (req, res) {
+router.post('/login', commonMiddleware.bodyCheck, usermiddleware.userCheckLogin, function (req, res) {
 });
 
 // Register USER API (OK)
-router.post('/register', usermiddleware.validationCheck, usermiddleware.registerCheck, async function (req, res) {
+router.post('/register', commonMiddleware.bodyCheck, usermiddleware.validationCheck, usermiddleware.registerCheck, async function (req, res) {
     await userController.registerUser(req.body, function (data) {
         console.log(data);
         res.send(data);
@@ -23,7 +23,7 @@ router.post('/register', usermiddleware.validationCheck, usermiddleware.register
 });
 
 // Login Forget API AND OTP TOKEN GENRATE (OK)
-router.post('/login/forget', usermiddleware.emailCheck, async function (req, res) {
+router.post('/login/forget', commonMiddleware.bodyCheck, usermiddleware.emailCheck, async function (req, res) {
     try {
         await userController.otpTokenGenerator(req.body.user_email, function (data) {
             return res.status(200).send(data);
@@ -35,7 +35,7 @@ router.post('/login/forget', usermiddleware.emailCheck, async function (req, res
 
 
 // Foget Password OTP Token Check API AND ChangePassword API (OK)
-router.post('/forget/token/check', usermiddleware.emailCheck, usermiddleware.userNewPasswordCheckValidation, usermiddleware.otpTokenCompare, async function (req, res) {
+router.post('/forget/token/check', commonMiddleware.bodyCheck, usermiddleware.emailCheck, usermiddleware.userNewPasswordCheckValidation, usermiddleware.otpTokenCompare, async function (req, res) {
     try {
         await userController.userForgetChangePassword(req, function (data) {
             return res.status(200).send(data);
@@ -46,7 +46,7 @@ router.post('/forget/token/check', usermiddleware.emailCheck, usermiddleware.use
 
 
 // UserChangePassword Change (OK)
-router.post('/userchangepassword', commonMiddleware.verifyAuthTokenAndEmail, usermiddleware.userNewPasswordCheckValidation, async function (req, res) {
+router.post('/userchangepassword', commonMiddleware.bodyCheck, commonMiddleware.verifyAuthTokenAndEmail, usermiddleware.userNewPasswordCheckValidation, async function (req, res) {
     try {
         await userController.userCheckChangePassword(req.body, req.headers, function (data) {
             if (data.status == "OK") {
@@ -61,7 +61,7 @@ router.post('/userchangepassword', commonMiddleware.verifyAuthTokenAndEmail, use
 
 
 // User Profile Get Profile (OK)
-router.post('/profile',commonMiddleware.verifyAuthToken, async function (req, res) {
+router.post('/profile', commonMiddleware.bodyCheck, commonMiddleware.verifyAuthToken, commonMiddleware.verifyAuthTokenAndEmail, async function (req, res) {
     try {
         await userController.profileGet(req.body.user_email, function (data) {
             res.send(data);
@@ -71,16 +71,12 @@ router.post('/profile',commonMiddleware.verifyAuthToken, async function (req, re
 });
 
 // Profile Updated API (OK)
-router.post('/profile/updated', commonMiddleware.verifyAuthToken,async function (req, res) {
+router.post('/profile/updated',commonMiddleware.verifyAuthToken,commonMiddleware.bodyCheck,commonMiddleware.verifyAuthTokenAndEmail, async function (req, res) {
     try {
-        if(req.body.user_email==undefined || req.body.user_profile==undefined){
-                res.send({status:"ERROR",message:"PLEASE ENTER A DETAILS"});
-        }else{
-            await userController.profileUpdated(req.body.user_email, req.body.user_profile, function (data) {
-                res.send(data);
-            });
-        }
-    } catch (error) {   
+        await userController.profileUpdated(req.body.user_email, req.body.user_profile, function (data) {
+            res.send(data);
+        });
+    } catch (error) {
     }
 });
 
