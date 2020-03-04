@@ -80,24 +80,18 @@ recipeUtil.editRecipe = async function (body, callback) {
 // Delete Recipe
 recipeUtil.deleteRecipe = async function (id, callback) {
     try {
-        let sqlChildDelete = `DELETE favorite,comment
-        FROM favorite
-        INNER JOIN comment ON favorite.recipe_id=comment.recipe_id
-        WHERE comment.recipe_id=${id}`;
-        await DataBaseConnection.query(sqlChildDelete,async function (error, result) {
-            if (!error) {
-                let sqlQuery = `delete from recipes where recipe_id=${id}`;
-                await DataBaseConnection.query(sqlQuery, function (error, result) {
-                    if (!error) {
-                        if (result.affectedRows == 1) {
-                            return callback(data = { status: "OK", message: "RECIPE DELETED" });
-                        } else {
-                            return callback(data = { status: "ERROR", message: "RECIPE IS NOT EXISTING" });
-                        }
+        if (!error) {
+            let sqlQuery = `delete from recipes where recipe_id=${id}`;
+            await DataBaseConnection.query(sqlQuery, function (error, result) {
+                if (!error) {
+                    if (result.affectedRows == 1) {
+                        return callback(data = { status: "OK", message: "RECIPE DELETED" });
+                    } else {
+                        return callback(data = { status: "ERROR", message: "RECIPE IS NOT EXISTING" });
                     }
-                });
-            }
-        });
+                }
+            });
+        }
     } catch (error) {
         return callback(data = { status: "ERROR", message: "ERROR" });
     }

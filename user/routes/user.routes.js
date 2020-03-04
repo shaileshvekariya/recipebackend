@@ -2,13 +2,12 @@
 const express = require('express');
 const router = express.Router();
 
-const bodyParser = require('body-parser');
-router.use(bodyParser.urlencoded({ extended: true }));
-
-
 const usermiddleware = require('../middleware/usermiddleware');
 const userController = require('../controller/user.controller');
 const commonMiddleware = require('../../shared/middleware/commonMiddleware');
+
+const upload = require('../../shared/middleware/imageUpload');
+
 
 // Login API (OK)
 router.post('/login', commonMiddleware.bodyCheck, usermiddleware.userCheckLogin, function (req, res) {
@@ -17,7 +16,6 @@ router.post('/login', commonMiddleware.bodyCheck, usermiddleware.userCheckLogin,
 // Register USER API (OK)
 router.post('/register', commonMiddleware.bodyCheck, usermiddleware.validationCheck, usermiddleware.registerCheck, async function (req, res) {
     await userController.registerUser(req.body, function (data) {
-        console.log(data);
         res.send(data);
     });
 });
@@ -71,13 +69,17 @@ router.post('/profile', commonMiddleware.bodyCheck, commonMiddleware.verifyAuthT
 });
 
 // Profile Updated API (OK)
-router.post('/profile/updated',commonMiddleware.verifyAuthToken,commonMiddleware.bodyCheck,commonMiddleware.verifyAuthTokenAndEmail, async function (req, res) {
+router.post('/profile/updated', upload.any(), commonMiddleware.verifyAuthToken, commonMiddleware.bodyCheck, commonMiddleware.verifyAuthTokenAndEmail, async function (req, res) {
+    if(req.files.length==0){
+        res.send(data={status:"ERROR",message:"PLEASE SEND A IMAGE"});
+    }
     try {
-        await userController.profileUpdated(req.body.user_email, req.body.user_profile, function (data) {
+        await userController.profileUpdated(req.body.user_email, req.files[0].filename, req.files[0].size, function (data) {
             res.send(data);
         });
     } catch (error) {
     }
 });
+
 
 module.exports = router;

@@ -86,11 +86,14 @@ commonFunction.passwordValid = async function (password, callback) {
 }
 
 // Image Validation
-commonFunction.imageValidation=async function(file,callback){
+commonFunction.imageValidation=async function(file,fileSize,callback){
     if((!isNaN(file) || file.lastIndexOf('.')==-1) ||
     !["jpeg","jpg","png"].includes(file.substring(file.lastIndexOf('.')+ 1).toLowerCase())){
         return callback(data={status:"ERROR",message:"IMAGE IS NOT VALID Format(jpeg,jpg,png) Ex.Ab.jpg"});
-    }else{
+    }else if(fileSize>=2000000){
+        return callback(data={status:"ERROR",message:"Image File is Greater then a 2 MB upload a small file"});
+    }
+    else{
         return callback(data={status:"OK",message:""});
     }
 }

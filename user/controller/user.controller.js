@@ -56,10 +56,11 @@ userController.emailExists = async function (email, callback) {
 // OPT TOKEN Generate
 userController.otpTokenGenerator = async function (email, callback) {
     try {
-        let otpToken = Math.floor(Math.random() * 90000) + 10000;
+        // let otpToken = Math.floor(Math.random() * 90000) + 10000;
+        let otpToken = 11111;
         let mailOptions = {
             from: 'Recipe House<shailesh.vekariya.sa@gmail.com>',
-            to: "ajay.vandra.sa@gmail.com",
+            to: email,
             subject: "Reset Your Password",
             html: `<h1>Welcome Recipe House</h1> <h2 style="color:red;">Do not Share Any Person</h2>
              <h4 style="color:red;">Only 1 Minute To a  Valid a Token.</h4>
@@ -221,8 +222,8 @@ userController.profileGet = async function (email, callback) {
 };
 
 // User Profile Image Upload And Updated
-userController.profileUpdated =async function (email, user_profile, callback) {
-    await commonFunction.imageValidation(user_profile,async function (data) {
+userController.profileUpdated = async function (email, user_profile,fileSize,callback) {
+    await commonFunction.imageValidation(user_profile,fileSize,async function (data) {
         if (data.status !== "ERROR") {
             sqlQuery = `UPDATE user SET user_profile='${user_profile}' where user_email='${email}'`;
             await DataBaseConnection.query(sqlQuery, (error, result) => {
@@ -233,7 +234,7 @@ userController.profileUpdated =async function (email, user_profile, callback) {
                     return callback(data = { status: "OK", message: "PROFILE IS UPDATED" });
                 }
             });
-        }else{
+        } else {
             return callback(data);
         }
     });
