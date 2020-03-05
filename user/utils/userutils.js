@@ -34,14 +34,14 @@ userUtils.emailOrPhoneExists = async function (email, phone, callback) {
         let checkQueryEmail = `SELECT * FROM user where user_email='${email}'`;
         await DataBaseConnection.query(checkQueryEmail, function (err, result) {
             if (result.length == 1) {
-                data.data1 = { status: "ERROR", message: "User email already Exists" };
+                data.emailError = { status: "ERROR", message: "User email already Exists" };
             }
         });
 
         checkQuery = `SELECT * FROM user where user_phone=${phone}`;
         await DataBaseConnection.query(checkQuery, function (err, result) {
             if (result.length == 1) {
-                data.data2 = { status: "ERROR", message: "Phone number already Exists" };
+                data.phoneError = { status: "ERROR", message: "Phone number already Exists" };
             }
             return callback(data);
         });

@@ -49,7 +49,7 @@ recipeController.recipeDelete = async function (id, callback) {
 // All Recipes Gets (with user login or not login)
 recipeController.recipesGets = async function (count, user, callback) {
     try {
-        await recipeUtil.getRecipes(count, user, function (data) {
+        await recipeUtil.getRecipes(Number(count), user, function (data) {
             return callback(data);
         });    
     } catch (error) {
@@ -72,7 +72,7 @@ recipeController.recipesGet = async function (id,user,callback) {
 // Add or Remove favorite recipe
 recipeController.favorite = async function (body, callback) {
     try {
-        if(body.favorite=="" && body.recipe_id==""){
+        if(body.favorite=="" || body.recipe_id==""){
             return callback({ status: "ERROR", message: "Favorite and recipe_id is not get" });
         }
         if (body.favorite == 'true') {

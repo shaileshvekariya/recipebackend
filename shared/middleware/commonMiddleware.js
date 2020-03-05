@@ -33,7 +33,7 @@ commonMiddleware.verifyAuthTokenAndEmail = async function (req, res, next) {
             if (data.status == "OK") {
                 next();
             } else {
-                res.status(200).send(data);
+                res.status(200).send(data); 
             }
         });
     } else {

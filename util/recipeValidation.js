@@ -11,7 +11,7 @@ function validationRecipe(body,recipeImage){
     recipe.recipe_cookingtime=body.recipe_cookingtime;
     recipe.recipe_ingredients=body.recipe_ingredients;
     recipe.recipe_steps=body.recipe_steps;
-    recipe.recipe_people=body.recipe_people;
+    recipe.recipe_people=Number(body.recipe_people);
     recipe.recipe_image=recipeImage;
     recipe.recipe_description=body.recipe_description;
 
@@ -48,7 +48,9 @@ function validationRecipe(body,recipeImage){
         return data.data6={status:"ERROR",message:"ADD MORE RECIPE STEP ENTER"};
     }
 
-    if(isNaN(recipe.recipe_people) || recipe.recipe_people==""){
+    if(isNaN(recipe.recipe_people) || recipe.recipe_people=="" ||
+        recipe.recipe_people>20 || recipe.recipe_people<1
+    ){
         return data.data7={status:"ERROR",message:"RECIPE PEOPLE IS NOT VALID"}
     }
 

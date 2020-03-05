@@ -11,10 +11,10 @@ const upload=require('../../shared/middleware/recipeimageupload');
 router.post('/add',upload.any(),commonMiddleware.verifyAuthToken,commonMiddleware.bodyCheck,recipeMiddleware.validation);
 
 // Recipe Edited
-router.post('/edit',upload.any(),commonMiddleware.verifyAuthToken,commonMiddleware.bodyCheck,recipeMiddleware.validationEdit);
+router.post('/edit',upload.any(),commonMiddleware.verifyAuthToken,commonMiddleware.bodyCheck,recipeMiddleware.recipeExistsOrNot,recipeMiddleware.validationEdit);
 
 // Recipe Deleted
-router.post('/delete', commonMiddleware.verifyAuthToken,commonMiddleware.bodyCheck, async function (req, res) {
+router.post('/delete', commonMiddleware.verifyAuthToken,commonMiddleware.bodyCheck,recipeMiddleware.recipeExistsOrNot,async function (req, res) {
     try {
         await recipeController.recipeDelete(req.body.recipe_id, function (data) {
             if (data.status == "OK") {

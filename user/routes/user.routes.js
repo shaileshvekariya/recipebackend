@@ -69,7 +69,8 @@ router.post('/profile', commonMiddleware.bodyCheck, commonMiddleware.verifyAuthT
 });
 
 // Profile Updated API (OK)
-router.post('/profile/updated', upload.any(), commonMiddleware.verifyAuthToken, commonMiddleware.bodyCheck, commonMiddleware.verifyAuthTokenAndEmail, async function (req, res) {
+router.post('/profile/updated', commonMiddleware.verifyAuthToken, upload.any(), commonMiddleware.bodyCheck, commonMiddleware.verifyAuthTokenAndEmail, async function (req, res) {
+    upload.none();
     if(req.files.length==0){
         res.send(data={status:"ERROR",message:"PLEASE SEND A IMAGE"});
     }
@@ -86,4 +87,5 @@ router.use((error,req,res,next)=>{
         res.status(500).send(data={status:"ERROR",message:error.message});
     }
 });
+
 module.exports = router;

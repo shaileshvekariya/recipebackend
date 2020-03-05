@@ -165,7 +165,7 @@ userController.userVerifyTokenAndEmail = async function (user_authtoken, email, 
                 if (rows.length >= 1) {
                     return callback(data = { status: "OK", message: "TOKEN IS AVAILABLE" });
                 } else {
-                    return callback(data = { status: "ERROR", message: "PLEASE ENTER A VALID REGISTER EMAIL ID" });
+                    return callback(data = { status: "ERROR", message: "TOKEN IS NOT MATCH THIS EMAIL ID PLEASE CHANGE REGISTER EMAIL ID" });
                 }
             }
         });
@@ -215,7 +215,7 @@ userController.profileGet = async function (email, callback) {
         let sqlQuery = `SELECT user_firstname,user_lastname,user_email,user_phone,user_gender,user_profile FROM user where user_email='${email}'`;
         await DataBaseConnection.query(sqlQuery, function (error, result) {
             if (result.length >= 1) {
-                return callback(result[0]);
+                return callback(data = { status: "OK", message: "", user_details: result[0] });
             }
         });
     } catch (error) {
@@ -232,16 +232,17 @@ userController.profileUpdated = async function (email, user_profile, fileSize, c
                 try {
                     fs.unlinkSync('public/userimages/' + userOldImage);
                 } catch (error) {
+                } finally {
+                    sqlQuery = `UPDATE user SET user_profile='${user_profile}' where user_email='${email}'`;
+                    await DataBaseConnection.query(sqlQuery, (error, result) => {
+                        if (error) {
+                            return callback(data = { status: "ERROR", message: "PROFILE IS NOT UPDATED" });
+                        }
+                        if (result.affectedRows == 1) {
+                            return callback(data = { status: "OK", message: "PROFILE IS UPDATED" });
+                        }
+                    });
                 }
-                sqlQuery = `UPDATE user SET user_profile='${user_profile}' where user_email='${email}'`;
-                await DataBaseConnection.query(sqlQuery, (error, result) => {
-                    if (error) {
-                        return callback(data = { status: "ERROR", message: "PROFILE IS NOT UPDATED" });
-                    }
-                    if (result.affectedRows == 1) {
-                        return callback(data = { status: "OK", message: "PROFILE IS UPDATED" });
-                    }
-                });
             });
 
         } else {
