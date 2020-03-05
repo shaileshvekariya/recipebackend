@@ -6,7 +6,7 @@ const bodyParser = require('body-parser');
 app.use(bodyParser.urlencoded({ extended: true, limit: '10mb' }));
 app.use(bodyParser.json());
 
-app.use(express.static(path.join(__dirname,'./images/')));
+app.use(express.static(path.join(__dirname,'public')));
 
 // Globel Variable Any App to Access
 app.set("status", "CANCEL");

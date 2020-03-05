@@ -5,6 +5,7 @@ recipeController = {};
 // Validation Recipe And Add Recipe
 recipeController.validateRecipe = async function (body, auth_token, callback) {
     try {
+        console.log(body);
         data = await validationRecipe(body);
         if (Object.entries(data).length == 0) {
             data = await recipeUtil.addRecipe(body, auth_token, function (data) {
@@ -14,6 +15,7 @@ recipeController.validateRecipe = async function (body, auth_token, callback) {
             return callback(data);
         };
     } catch (error) {
+        console.log(error);
         return callback({ status: "ERROR", message: "Recipe Controller Validation Error" });
     }
 }

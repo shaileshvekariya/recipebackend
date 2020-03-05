@@ -6,7 +6,7 @@ const usermiddleware = require('../middleware/usermiddleware');
 const userController = require('../controller/user.controller');
 const commonMiddleware = require('../../shared/middleware/commonMiddleware');
 
-const upload = require('../../shared/middleware/imageUpload');
+const upload = require('../../shared/middleware/userimageUpload');
 
 
 // Login API (OK)
@@ -81,5 +81,9 @@ router.post('/profile/updated', upload.any(), commonMiddleware.verifyAuthToken, 
     }
 });
 
-
+router.use((error,req,res,next)=>{
+    if(error){
+        res.status(500).send(data={status:"ERROR",message:error.message});
+    }
+});
 module.exports = router;

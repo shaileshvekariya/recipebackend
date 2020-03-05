@@ -1,5 +1,6 @@
 const DataBaseConnection = require('../../connection/connection');
 const crypto = require('crypto');
+const fs = require('fs');
 const userUtils = require('../utils/userutils');
 const sendMail = require('../../nodeMailer/SendMail');
 
@@ -222,18 +223,27 @@ userController.profileGet = async function (email, callback) {
 };
 
 // User Profile Image Upload And Updated
-userController.profileUpdated = async function (email, user_profile,fileSize,callback) {
-    await commonFunction.imageValidation(user_profile,fileSize,async function (data) {
+userController.profileUpdated = async function (email, user_profile, fileSize, callback) {
+    await commonFunction.imageValidation(user_profile, fileSize, async function (data) {
         if (data.status !== "ERROR") {
-            sqlQuery = `UPDATE user SET user_profile='${user_profile}' where user_email='${email}'`;
-            await DataBaseConnection.query(sqlQuery, (error, result) => {
-                if (error) {
-                    return callback(data = { status: "ERROR", message: "PROFILE IS NOT UPDATED" });
+            let oldUserImageFetch = `SELECT user_profile FROM user WHERE user_email='${email}'`;
+            await DataBaseConnection.query(oldUserImageFetch, async function (error, result) {
+                let userOldImage = result[0].user_profile;
+                try {
+                    fs.unlinkSync('public/userimages/' + userOldImage);
+                } catch (error) {
                 }
-                if (result.affectedRows == 1) {
-                    return callback(data = { status: "OK", message: "PROFILE IS UPDATED" });
-                }
+                sqlQuery = `UPDATE user SET user_profile='${user_profile}' where user_email='${email}'`;
+                await DataBaseConnection.query(sqlQuery, (error, result) => {
+                    if (error) {
+                        return callback(data = { status: "ERROR", message: "PROFILE IS NOT UPDATED" });
+                    }
+                    if (result.affectedRows == 1) {
+                        return callback(data = { status: "OK", message: "PROFILE IS UPDATED" });
+                    }
+                });
             });
+
         } else {
             return callback(data);
         }

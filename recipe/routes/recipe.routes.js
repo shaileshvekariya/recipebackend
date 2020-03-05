@@ -1,29 +1,14 @@
 const express = require('express');
 const router = express.Router();
-const bodyParser = require('body-parser');
-// const multer = require('multer');
-
-// const storage = multer.diskStorage({
-//     destination: function (req, file, cb) {
-//         cb(null, '../images/');
-//     },
-//     filename: function (req, file, cb) {
-//         cb(null, file.originalname);
-//     }
-// });
-
-// const upload = multer({ storage: storage });
-
-router.use(bodyParser.urlencoded({ extended: false }));
-
 
 const commonMiddleware = require('../../shared/middleware/commonMiddleware');
 const recipeMiddleware = require('../middleware/recipe_middleware');
 const recipeController = require('../controller/recipe.controller');
 
+const upload=require('../../shared/middleware/recipeimageupload');
 
 // Recipe Added
-router.post('/add', commonMiddleware.verifyAuthToken, commonMiddleware.bodyCheck,recipeMiddleware.validation);
+router.post('/add',commonMiddleware.verifyAuthToken,upload.any(),commonMiddleware.bodyCheck,recipeMiddleware.validation);
 
 // Recipe Edited
 router.post('/edit', commonMiddleware.verifyAuthToken,commonMiddleware.bodyCheck,recipeMiddleware.validationEdit);
@@ -151,6 +136,12 @@ router.post('/comment', commonMiddleware.verifyAuthTokenAndEmail, recipeMiddlewa
         }
     } catch (error) {
         return res.status(500).send(data = { status: "ERROR", message: "COMMENT ADDED ERROR" });
+    }
+});
+
+router.use((error,req,res,next)=>{
+    if(error){
+        res.status(500).send(data={status:"ERROR",message:error.message});
     }
 });
 
