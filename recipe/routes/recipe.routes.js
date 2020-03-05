@@ -8,10 +8,10 @@ const recipeController = require('../controller/recipe.controller');
 const upload=require('../../shared/middleware/recipeimageupload');
 
 // Recipe Added
-router.post('/add',commonMiddleware.verifyAuthToken,upload.any(),commonMiddleware.bodyCheck,recipeMiddleware.validation);
+router.post('/add',upload.any(),commonMiddleware.verifyAuthToken,commonMiddleware.bodyCheck,recipeMiddleware.validation);
 
 // Recipe Edited
-router.post('/edit', commonMiddleware.verifyAuthToken,commonMiddleware.bodyCheck,recipeMiddleware.validationEdit);
+router.post('/edit',upload.any(),commonMiddleware.verifyAuthToken,commonMiddleware.bodyCheck,recipeMiddleware.validationEdit);
 
 // Recipe Deleted
 router.post('/delete', commonMiddleware.verifyAuthToken,commonMiddleware.bodyCheck, async function (req, res) {

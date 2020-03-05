@@ -1,6 +1,6 @@
 const recipe=require('../recipe/model/recipe.model');
 
-function validationRecipe(body){
+function validationRecipe(body,recipeImage){
 
 
     let data={};
@@ -12,7 +12,7 @@ function validationRecipe(body){
     recipe.recipe_ingredients=body.recipe_ingredients;
     recipe.recipe_steps=body.recipe_steps;
     recipe.recipe_people=body.recipe_people;
-    recipe.recipe_image=body.recipe_image;
+    recipe.recipe_image=recipeImage;
     recipe.recipe_description=body.recipe_description;
 
     let regexRecipe = /^[A-Za-z]+$/;

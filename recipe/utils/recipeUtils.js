@@ -1,10 +1,11 @@
 const DataBaseConnection = require('../../connection/connection');
 const recipe = require('../model/recipe.model');
+const fs = require('fs');
 
 recipeUtil = {};
 
 // Add Recipe
-recipeUtil.addRecipe = async function (body, auth_token, callback) {
+recipeUtil.addRecipe = async function (body, auth_token, recipeImageFileNames, callback) {
     try {
         let sqlUserID = `SELECT user_id from user where user_authtoken='${auth_token}'`;
         await DataBaseConnection.query(sqlUserID, async function (error, result) {
@@ -15,9 +16,7 @@ recipeUtil.addRecipe = async function (body, auth_token, callback) {
             recipe.recipe_ingredients = body.recipe_ingredients;
             recipe.recipe_steps = body.recipe_steps;
             recipe.recipe_people = Number(body.recipe_people);
-            // let abc=upload('body.recipe_image');
-            // console.log(abc);
-            recipe.recipe_image = body.recipe_image;
+            recipe.recipe_image = recipeImageFileNames;
             recipe.user_id = result[0].user_id;
             recipe.recipe_description = body.recipe_description;
 
@@ -39,8 +38,7 @@ recipeUtil.addRecipe = async function (body, auth_token, callback) {
 }
 
 // Edit Recipe
-recipeUtil.editRecipe = async function (body, callback) {
-
+recipeUtil.editRecipe = async function (body, recipeImageFileNames, callback) {
     try {
         recipe.recipe_name = body.recipe_name;
         recipe.type_id = Number(body.type_id);
@@ -49,11 +47,20 @@ recipeUtil.editRecipe = async function (body, callback) {
         recipe.recipe_ingredients = body.recipe_ingredients;
         recipe.recipe_steps = body.recipe_steps;
         recipe.recipe_people = Number(body.recipe_people);
-        recipe.recipe_image = body.recipe_image;
+        recipe.recipe_image = recipeImageFileNames;
         recipe.recipe_description = body.recipe_description;
         let recipe_id = body.recipe_id;
 
         if (!isNaN(recipe_id) && recipe_id !== "") {
+
+            let sqlRecipeID = `SELECT recipe_image FROM recipes WHERE recipe_id=${Number(body.recipe_id)}`;
+            DataBaseConnection.query(sqlRecipeID, function (error, result) {
+                let recipeOldImage = result[0].recipe_image;
+                try {
+                    fs.unlinkSync('public/recipeimages/' + recipeOldImage);
+                } catch (error) {
+                }
+            });
 
             let value = [recipe.recipe_name, recipe.type_id, recipe.recipe_level, recipe.recipe_cookingtime, recipe.recipe_ingredients, recipe.recipe_steps, recipe.recipe_people, recipe.recipe_image, recipe.recipe_description, recipe_id];
             let sqlQuery = "UPDATE recipes SET recipe_name=? ,type_id=? ,recipe_level=? ,recipe_cookingtime=? ,recipe_ingredients=? ,recipe_steps=? ,recipe_people=? ,recipe_image=?,recipe_description=? where recipe_id=?";

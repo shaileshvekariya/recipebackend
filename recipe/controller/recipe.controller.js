@@ -3,12 +3,11 @@ recipeUtil = require('../utils/recipeUtils');
 recipeController = {};
 
 // Validation Recipe And Add Recipe
-recipeController.validateRecipe = async function (body, auth_token, callback) {
+recipeController.validateRecipe = async function (body, auth_token,recipeImageFileNames,callback) {
     try {
-        console.log(body);
-        data = await validationRecipe(body);
+        data = await validationRecipe(body,recipeImageFileNames[0]);
         if (Object.entries(data).length == 0) {
-            data = await recipeUtil.addRecipe(body, auth_token, function (data) {
+            data = await recipeUtil.addRecipe(body, auth_token,recipeImageFileNames[1],function (data) {
                 return callback(data);
             });
         } else {
@@ -21,11 +20,11 @@ recipeController.validateRecipe = async function (body, auth_token, callback) {
 }
 
 // Validation Recipe And Edit Recipe
-recipeController.validationEdit = async function (body, callback) {
+recipeController.validationEdit = async function (body,recipeImageFileNames,callback) {
     try {
-        data = await validationRecipe(body);
+        data = await validationRecipe(body,recipeImageFileNames[0]);
         if (Object.entries(data).length == 0) {
-            data = await recipeUtil.editRecipe(body, function (data) {
+            data = await recipeUtil.editRecipe(body,recipeImageFileNames[1],function (data) {
                 return callback(data);
             });
         } else {

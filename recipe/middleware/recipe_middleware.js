@@ -5,7 +5,9 @@ recipeMiddleware = {};
 // Validation Recipe
 recipeMiddleware.validation = async function (req, res, next) {
     try {
-        await recipeController.validateRecipe(req.body, req.headers.user_authtoken, function (data) {
+        // list [0] orignale File name , [1] filename own modifi
+        let recipeImageFileNames=[req.files[0].originalname,req.files[0].filename];
+        await recipeController.validateRecipe(req.body,req.headers.user_authtoken,recipeImageFileNames, function (data) {
             if (data.status == "OK") {
                 res.status(200).send(data);
                 next();
@@ -21,7 +23,9 @@ recipeMiddleware.validation = async function (req, res, next) {
 // validation on Edit Recipes
 recipeMiddleware.validationEdit = async function (req, res, next) {
     try {
-        await recipeController.validationEdit(req.body, function (data) {
+        // list [0] orignale File name , [1] filename own modifi
+        let recipeImageFileNames=[req.files[0].originalname,req.files[0].filename];
+        await recipeController.validationEdit(req.body,recipeImageFileNames,function (data) {
             if(data.status=="OK"){
                 res.status(200).send(data);
                 next();
