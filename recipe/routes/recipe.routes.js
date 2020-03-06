@@ -107,7 +107,7 @@ router.get('/myrecipe', commonMiddleware.verifyAuthToken, async function (req, r
     if(req.query.recipe_id === undefined && req.query.recipe_id == ""){
         res.status(400).send(data={status:"ERROR",message:"Recipe id is not get"});
     }
-    await recipeController.userRecipe(req.query.recipe_id, function (data) {
+    await recipeController.userRecipe(req.query.recipe_id,req.headers['user_authtoken'],function (data) {
         return res.status(200).send(data);
     });
 });

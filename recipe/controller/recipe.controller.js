@@ -114,10 +114,12 @@ recipeController.userRecipes = async function (email,count, callback) {
 }
 
 // perticular user single recipes get
-recipeController.userRecipe = async function (id, callback) {
+recipeController.userRecipe = async function (id,auth_token,callback) {
     try {
-        await recipeUtil.userGetRecipe(id, function (data) {
-            return callback(data);
+        userController.getUserIdToAuthToken(auth_token,async function(data){
+            await recipeUtil.userGetRecipe(id,data,function (data) {
+                return callback(data);
+            });
         });
     } catch (error) {
         return callback({ status: "ERROR", message: "Recipe Controller Perticular User Recipe Get Controller" });

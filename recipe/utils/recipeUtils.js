@@ -110,8 +110,8 @@ recipeUtil.deleteRecipe = async function (id, callback) {
 recipeUtil.getRecipes = async function (count, user, callback) {
     try {
         if (user[0]) {
-            let sqlQuery = `SELECT COUNT(f.recipe_id) AS favoriteCount,COUNT(f.user_id) AS recipeLike,
-            r.recipe_id,
+            let sqlQuery = `SELECT COUNT(f.recipe_id) AS favoriteCount,	    
+			r.recipe_id,
             rt.type_name,
             r.recipe_name,
             r.recipe_level,
@@ -121,12 +121,20 @@ recipeUtil.getRecipes = async function (count, user, callback) {
             r.recipe_description
             FROM recipes r
             LEFT JOIN recipe_type rt ON r.type_id=rt.type_id
-            LEFT JOIN favorite f ON r.recipe_id=f.recipe_id AND ${user[1]}=f.user_id
-            GROUP BY r.recipe_id LIMIT ${count},10`;
-            // let sqlQuery = `SELECT recipe_id,recipe_name,type_id,recipe_level,recipe_cookingtime,recipe_image,recipe_description from recipes `;
-            await DataBaseConnection.query(sqlQuery, function (error, result) {
+            LEFT JOIN favorite f ON f.recipe_id=r.recipe_id 
+            GROUP BY r.recipe_id  ORDER BY r.recipe_id DESC LIMIT ${count},10`;
+            await DataBaseConnection.query(sqlQuery, async function (error, resultOuter) {
                 if (!error) {
-                    return callback(result);
+                    let sqlQuery = `SELECT COUNT(f.recipe_id) AS recipeLike 
+                    FROM recipes r
+                    LEFT JOIN favorite f ON f.recipe_id=r.recipe_id AND f.user_id=${user[1]}
+                    GROUP BY r.recipe_id ORDER BY r.recipe_id DESC LIMIT ${count},10`;
+                    await DataBaseConnection.query(sqlQuery, function (error, result) {
+                        for (let i = 0; i < Object.keys(resultOuter).length; i++) {
+                            resultOuter[i].recipeLike = result[i].recipeLike;
+                        }
+                        return callback(resultOuter);
+                    });
                 } else {
                     return callback(data = { status: "ERROR", message: "Please Pass a Count Data" });
                 }
@@ -144,8 +152,7 @@ recipeUtil.getRecipes = async function (count, user, callback) {
             FROM recipes r
             LEFT JOIN recipe_type rt ON r.type_id=rt.type_id
             LEFT JOIN favorite f ON r.recipe_id=f.recipe_id
-            GROUP BY r.recipe_id LIMIT ${count},10`;
-            console.log(sqlQuery);
+            GROUP BY r.recipe_id ORDER BY r.recipe_id DESC LIMIT ${count},10`;
             await DataBaseConnection.query(sqlQuery, function (error, result) {
                 if (!error) {
                     return callback(result);
@@ -163,7 +170,7 @@ recipeUtil.getRecipes = async function (count, user, callback) {
 recipeUtil.getRecipe = async function (id, user, callback) {
     try {
         if (user[0]) {
-            let sqlQuery = `SELECT COUNT(f.recipe_id) AS favoriteCount,COUNT(f.user_id) AS recipeLike,
+            let sqlQuery = `SELECT COUNT(f.recipe_id) AS favoriteCount,
             r.recipe_id,
             rt.type_name,
             r.recipe_name,
@@ -174,12 +181,17 @@ recipeUtil.getRecipe = async function (id, user, callback) {
             r.recipe_description
             FROM recipes r
             LEFT JOIN recipe_type rt ON r.type_id=rt.type_id
-            LEFT JOIN favorite f ON r.recipe_id=f.recipe_id AND ${user[1]}=f.user_id
+            LEFT JOIN favorite f ON r.recipe_id=f.recipe_id
             GROUP BY r.recipe_id HAVING r.recipe_id=${id}`;
-            // let sqlQuery = `SELECT recipe_id,recipe_name,type_id,recipe_level,recipe_cookingtime,recipe_image,recipe_description from recipes `;
-            await DataBaseConnection.query(sqlQuery, function (error, result) {
+            await DataBaseConnection.query(sqlQuery,async function (error, resultOuter) {
                 if (!error) {
-                    return callback(result[0]);
+                    let sqlQuery=`SELECT COUNT(*) as recipeLike FROM favorite WHERE recipe_id=${id} AND user_id=${user[1]}`;
+                    await DataBaseConnection.query(sqlQuery,async function (error, result) {
+                        if (!error) {
+                            resultOuter[0].recipeLike=result[0].recipeLike;
+                            return callback(resultOuter);
+                        }
+                    });
                 } else {
                     return callback(data = { status: "ERROR", message: "Please Passed a Recipe ID" });
                 }
@@ -284,8 +296,9 @@ recipeUtil.userFavoriteRecipe = async function (email, callback) {
         await DataBaseConnection.query(sqlQueryUser_ID, async function (error, result) {
             let user_id = result[0].user_id;
 
-            let sqlQuery = `SELECT COUNT(f.recipe_id) AS favoriteCount,COUNT(f.user_id) AS recipeLike,
-            r.recipe_id,
+            let sqlQuery = `SELECT COUNT(f.recipe_id) AS favoriteCount,	    
+			f.user_id,
+			r.recipe_id,
             rt.type_name,
             r.recipe_name,
             r.recipe_level,
@@ -295,18 +308,27 @@ recipeUtil.userFavoriteRecipe = async function (email, callback) {
             r.recipe_description
             FROM recipes r
             LEFT JOIN recipe_type rt ON r.type_id=rt.type_id
-            LEFT JOIN favorite f ON r.recipe_id=f.recipe_id AND ${user_id}=f.user_id
-            GROUP BY r.recipe_id HAVING recipeLike=1`;
-            await DataBaseConnection.query(sqlQuery, function (error, result) {
+            LEFT JOIN favorite f ON f.recipe_id=r.recipe_id 
+            GROUP BY r.recipe_id
+            HAVING f.user_id=${user_id} ORDER BY r.recipe_id DESC `;
+            await DataBaseConnection.query(sqlQuery,async function (error, resultOuter) {
                 if (result.length >= 1) {
-                    return callback(result);
+                    let sqlQuery=`SELECT COUNT(f.recipe_id) AS recipeLike
+                    FROM recipes r
+                    INNER JOIN favorite f ON f.recipe_id=r.recipe_id AND f.user_id=${user_id}
+                    GROUP BY r.recipe_id`;
+                    await DataBaseConnection.query(sqlQuery,function(error,result){
+                        for (let i = 0; i < Object.keys(resultOuter).length; i++) {
+                            resultOuter[i].recipeLike = result[i].recipeLike;
+                        }
+                        return callback(resultOuter);
+                    });
                 } else {
                     return callback(data = { status: "ERROR", message: "Favorite Recipe is Not Exists" });
                 }
             });
         });
     } catch (error) {
-
     }
 }
 
@@ -316,9 +338,8 @@ recipeUtil.userGetsRecipes = async function (email, count, callback) {
         let sqlQueryUser_ID = `select user_id from user where user_email='${email}'`;
         await DataBaseConnection.query(sqlQueryUser_ID, async function (error, result) {
             let user_id = result[0].user_id;
-            let countLimit = Number(count) + 10;
 
-            let sqlQuery = `SELECT COUNT(f.recipe_id) AS favoriteCount,COUNT(f.user_id) AS recipeLike,
+            let sqlQuery = `SELECT COUNT(f.recipe_id) AS favoriteCount,
             r.recipe_id,
             rt.type_name,
             r.recipe_name,
@@ -330,12 +351,22 @@ recipeUtil.userGetsRecipes = async function (email, count, callback) {
             FROM recipes r
             JOIN recipe_type rt ON r.type_id=rt.type_id AND ${user_id}=r.user_id
             LEFT JOIN favorite f ON r.recipe_id=f.recipe_id
-            GROUP BY r.recipe_id LIMIT ${count},${countLimit}`;
-            await DataBaseConnection.query(sqlQuery, function (error, result) {
-                if (result.length <= 0) {
+            GROUP BY r.recipe_id ORDER BY r.recipe_id DESC  LIMIT ${count},10`;
+            await DataBaseConnection.query(sqlQuery, async function (error, resultOuter) {
+                if (resultOuter.length <= 0) {
                     return callback(data = { status: "OK", message: "This User Not Any Existing Recipe" });
                 } else {
-                    return callback(result);
+                    let sqlQuery = `SELECT COUNT(f.user_id) AS recipeLike
+                                    FROM recipes r
+                                    LEFT JOIN favorite f ON f.recipe_id=r.recipe_id AND f.user_id=r.user_id
+                                    WHERE r.user_id=${user_id}
+                                    GROUP BY r.recipe_id ORDER BY r.recipe_id DESC  LIMIT ${count},10 `;
+                    await DataBaseConnection.query(sqlQuery, function (error, result) {
+                        for (let i = 0; i < Object.keys(resultOuter).length; i++) {
+                            resultOuter[i].recipeLike = result[i].recipeLike;
+                        }
+                        return callback(resultOuter);
+                    });
                 }
             });
         });
@@ -345,9 +376,9 @@ recipeUtil.userGetsRecipes = async function (email, count, callback) {
 }
 
 // Get Single Recipe Perticular User
-recipeUtil.userGetRecipe = async function (id, callback) {
+recipeUtil.userGetRecipe = async function (id,user_id,callback) {
     try {
-        let sqlQuery = `SELECT COUNT(f.recipe_id) AS favoriteCount,COUNT(f.user_id) AS recipeLike,
+        let sqlQuery = `SELECT COUNT(f.recipe_id) AS favoriteCount,
         r.recipe_id,
         rt.type_name,
         r.recipe_name,
@@ -360,14 +391,20 @@ recipeUtil.userGetRecipe = async function (id, callback) {
         LEFT JOIN recipe_type rt ON r.type_id=rt.type_id
         LEFT JOIN favorite f ON r.recipe_id=f.recipe_id
         GROUP BY r.recipe_id HAVING r.recipe_id=${id}`;
-        await DataBaseConnection.query(sqlQuery, function (error, rows) {
+
+
+        await DataBaseConnection.query(sqlQuery,async function (error,resultOuter) {
             if (error) {
                 return callback(data = { status: "ERROR", message: "RECIPE ID IS NOT EXISTS" });
             }
-            if (rows.length == 0) {
+            if (resultOuter.length == 0) {
                 return callback(data = { status: "ERROR", message: "RECIPE IS NOT EXISTS" });
             } else {
-                return callback(rows[0]);
+                let  sqlQuery=`SELECT COUNT(*) as recipeLike FROM favorite WHERE recipe_id=${id} AND user_id=${user_id}`;
+                await DataBaseConnection.query(sqlQuery,function(error,result){
+                    resultOuter[0].recipeLike=result[0].recipeLike;
+                    return callback(resultOuter);
+                });
             }
         });
     } catch (error) {
