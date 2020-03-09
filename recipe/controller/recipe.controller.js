@@ -134,7 +134,7 @@ recipeController.userRecipe = async function (id,auth_token,callback) {
 
 // recipe comment validation check
 recipeController.commentValidate = function (comment_text, callback) {
-    if (comment_text.length < 1  || comment_text=="") {
+    if (comment_text.length < 1  && comment_text=="") {
         return callback(data = { status: "ERROR", message: "COMMENT IS NOT VALID" });
     } else {
         return callback(data = { status: "OK", message: "COMMENT IS VALID" });

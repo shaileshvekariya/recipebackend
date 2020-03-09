@@ -58,6 +58,9 @@ recipeMiddleware.validationEdit = async function (req, res, next) {
 // Recipe Comment Validation
 recipeMiddleware.commentValidation = async function (req, res, next) {
     try {
+        if(req.body.comment_text==undefined){
+            return res.status(400).send(data={status:"ERROR",message:"comment_text data not get"});
+        }
         await recipeController.commentValidate(req.body.comment_text,async function (data) {
             if (data.status == "OK") {
                 await recipeController.addComment(req.body, function (data) {
