@@ -7,7 +7,7 @@ var transporter = nodemailer.createTransport({
   }
 });
 
-// Send Mail Function Using To Otp Register And User Register
+// Send Mail Function Using To Otp Register
 function sendMail(mailOptions,callback) {
   transporter.sendMail(mailOptions, function (error, info) {
     if (error) {

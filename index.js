@@ -16,7 +16,7 @@ app.set("status", "CANCEL");
 
 // Routes
 const user = require('./user/routes/user.routes');
-const recipe = require('./recipe/routes/recipe.routes');
+const recipe = require('./recipe/routes/recipe.routes');    
 
 
 // Router Assign User
@@ -29,4 +29,6 @@ app.all('*', function (req, res) {
     return res.status(404).send("API NOT FOUND");
 });
 
-app.listen(3000);
+app.listen(process.env.PORT,function(){
+    console.log("SERVER START");
+});

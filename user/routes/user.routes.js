@@ -12,8 +12,7 @@ const fileUpload=require('express-fileupload');
 router.use(fileUpload());
 
 // Login API (OK)
-router.post('/login', commonMiddleware.bodyCheck, usermiddleware.userCheckLogin, function (req, res) {
-});
+router.post('/login', commonMiddleware.bodyCheck, usermiddleware.userCheckLogin);
 
 // Register USER API (OK)
 router.post('/register', commonMiddleware.bodyCheck, usermiddleware.validationCheck, usermiddleware.registerCheck, async function (req, res) {
