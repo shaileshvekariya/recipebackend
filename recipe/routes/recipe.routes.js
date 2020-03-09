@@ -1,22 +1,27 @@
 const express = require('express');
 const router = express.Router();
+const fileUpload=require('express-fileupload');
+
 
 const commonMiddleware = require('../../shared/middleware/commonMiddleware');
 const recipeMiddleware = require('../middleware/recipe_middleware');
 const recipeController = require('../controller/recipe.controller');
 
-const upload=require('../../shared/middleware/recipeimageupload');
+
+router.use(fileUpload());
+
+
 
 // Recipe Added
-router.post('/add',upload.any(),commonMiddleware.verifyAuthToken,commonMiddleware.bodyCheck,recipeMiddleware.validation);
+router.post('/add',commonMiddleware.verifyAuthToken,commonMiddleware.bodyCheck,recipeMiddleware.validation);
 
 // Recipe Edited
-router.post('/edit',upload.any(),commonMiddleware.verifyAuthToken,commonMiddleware.bodyCheck,recipeMiddleware.recipeExistsOrNot,recipeMiddleware.validationEdit);
+router.post('/edit',commonMiddleware.verifyAuthToken,commonMiddleware.bodyCheck,recipeMiddleware.recipeExistsOrNot,recipeMiddleware.validationEdit);
 
 // Recipe Deleted
 router.post('/delete', commonMiddleware.verifyAuthToken,commonMiddleware.bodyCheck,recipeMiddleware.recipeExistsOrNot,async function (req, res) {
     try {
-        await recipeController.recipeDelete(req.body.recipe_id, function (data) {
+        await recipeController.recipeDelete(Number(req.body.recipe_id), function (data) {
             if (data.status == "OK") {
                 res.status(200).send(data);
             } else {
@@ -113,25 +118,19 @@ router.get('/myrecipe', commonMiddleware.verifyAuthToken, async function (req, r
 });
 
 // Comment Add
-router.post('/comment', commonMiddleware.verifyAuthTokenAndEmail, recipeMiddleware.commentValidation, async function (req, res) {
+router.post('/comment', commonMiddleware.verifyAuthTokenAndEmail, async function (req, res) {
     try {
-        if (res.comment_status == "add") {
-            await recipeController.addComment(req.body, function (data) {
-                if (data.status == "ERROR") {
-                    return res.status(400).send(data);
-                } else {
-                    return res.status(200).send(data);
-                }
-            });
+        if (req.query.comment_status == "add") {
+            data=await recipeMiddleware.commentValidation(req,res);
         }
-        else if (res.comment_status == "show") {
+        else if (req.query.comment_status == "show") {
             await recipeController.showComment(req.body.recipe_id, function (data) {
                 return res.status(200).send(data);
             });
         }else{
             return res.status(400).send(data={status:"ERROR",message:"Comment status is not valid"});
         }
-        if(res.comment_status==undefined){
+        if(req.query.comment_status==undefined){
             return res.status(400).send(data={status:"ERROR",message:"Comment Status is Not Get Please Passed Query in comment status"});
         }
     } catch (error) {

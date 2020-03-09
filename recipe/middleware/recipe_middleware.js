@@ -5,12 +5,17 @@ recipeMiddleware = {};
 // Validation Recipe
 recipeMiddleware.validation = async function (req, res, next) {
     try {
-        if (req.files.length == 0) {
-            res.send(data = { status: "ERROR", message: "Please select a recipe image" });
+        if (!req.files) {
+            return res.send(data = { status: "ERROR", message: "Please select a recipe image" });
         }
 
-        // list [0] orignale File name , [1] filename own modifi
-        let recipeImageFileNames = [req.files[0].originalname, req.files[0].filename];
+        let recipeImageFileNames = [
+            req.files.recipe_image.name,
+            req.files.recipe_image.mimetype,
+            req.files.recipe_image.size,
+            req.files.recipe_image
+        ];
+
         await recipeController.validateRecipe(req.body, req.headers.user_authtoken, recipeImageFileNames, function (data) {
             if (data.status == "OK") {
                 res.status(200).send(data);
@@ -27,11 +32,16 @@ recipeMiddleware.validation = async function (req, res, next) {
 // validation on Edit Recipes
 recipeMiddleware.validationEdit = async function (req, res, next) {
     try {
-        if (req.files.length == 0) {
+        if (!req.files) {
             res.send(data = { status: "ERROR", message: "Please select a recipe image" });
         }
         // list [0] orignale File name , [1] filename own modifi
-        let recipeImageFileNames = [req.files[0].originalname, req.files[0].filename];
+        let recipeImageFileNames = [req.files.recipe_image.name,
+        req.files.recipe_image.mimetype,
+        req.files.recipe_image.size,
+        req.files.recipe_image
+        ];
+
         await recipeController.validationEdit(req.body, recipeImageFileNames, function (data) {
             if (data.status == "OK") {
                 res.status(200).send(data);
@@ -48,9 +58,15 @@ recipeMiddleware.validationEdit = async function (req, res, next) {
 // Recipe Comment Validation
 recipeMiddleware.commentValidation = async function (req, res, next) {
     try {
-        await recipeController.commentValidate(req.body.comment_text, function (data) {
+        await recipeController.commentValidate(req.body.comment_text,async function (data) {
             if (data.status == "OK") {
-                res.comment_status = req.query.comment_status;
+                await recipeController.addComment(req.body, function (data) {
+                    if (data.status == "ERROR") {
+                        return res.status(400).send(data);
+                    } else {
+                        return res.status(200).send(data);
+                    }
+                });
                 next();
             } else {
                 return res.status(400).send(data);
@@ -63,13 +79,16 @@ recipeMiddleware.commentValidation = async function (req, res, next) {
 
 // Recipe IS EXISTS OR NOT
 recipeMiddleware.recipeExistsOrNot = async function (req, res, next) {
-    recipeUtil.userGetRecipe(req.body.recipe_id, function (data) {
-        if(data.status=="ERROR"){
-            return res.status(400).send(data);
-        }else{
-            next();
-        }
+    await userController.getUserIdToAuthToken(req.headers['user_authtoken'], async function (user) {
+        await recipeUtil.userGetRecipe(Number(req.body.recipe_id), user, function (data) {
+            if (data.status == "ERROR") {
+                return res.status(400).send(data = { status: "ERROR", message: "User is not authorization to recipe deleted" });
+            } else {
+                next();
+            }
+        });
     });
+
 }
 
 module.exports = recipeMiddleware;

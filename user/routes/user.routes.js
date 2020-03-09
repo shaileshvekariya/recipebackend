@@ -6,8 +6,10 @@ const usermiddleware = require('../middleware/usermiddleware');
 const userController = require('../controller/user.controller');
 const commonMiddleware = require('../../shared/middleware/commonMiddleware');
 
-const upload = require('../../shared/middleware/userimageUpload');
+const fileUpload=require('express-fileupload');
 
+
+router.use(fileUpload());
 
 // Login API (OK)
 router.post('/login', commonMiddleware.bodyCheck, usermiddleware.userCheckLogin, function (req, res) {
@@ -69,16 +71,18 @@ router.post('/profile', commonMiddleware.bodyCheck, commonMiddleware.verifyAuthT
 });
 
 // Profile Updated API (OK)
-router.post('/profile/updated', commonMiddleware.verifyAuthToken, upload.any(), commonMiddleware.bodyCheck, commonMiddleware.verifyAuthTokenAndEmail, async function (req, res) {
-    upload.none();
-    if(req.files.length==0){
-        res.send(data={status:"ERROR",message:"PLEASE SEND A IMAGE"});
-    }
+router.post('/profile/updated', commonMiddleware.verifyAuthToken,commonMiddleware.bodyCheck, commonMiddleware.verifyAuthTokenAndEmail, async function (req, res) {
     try {
-        await userController.profileUpdated(req.body.user_email, req.files[0].filename, req.files[0].size, function (data) {
-            res.send(data);
-        });
+        if(!req.files){
+            return res.send(data={status:"ERROR",message:"PLEASE SEND A IMAGE"});
+        }else{
+            await userController.profileUpdated(req.files.user_profile,req.body.user_email,req.files.user_profile.name,req.files.user_profile.size, function (data) {
+                res.send(data);
+            });
+        }
     } catch (error) {
+        console.log(error);
+        res.send("CALLED ERROR");
     }
 });
 

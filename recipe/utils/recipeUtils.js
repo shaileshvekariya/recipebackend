@@ -38,7 +38,7 @@ recipeUtil.addRecipe = async function (body, auth_token, recipeImageFileNames, c
 }
 
 // Edit Recipe
-recipeUtil.editRecipe = async function (body, recipeImageFileNames, callback) {
+recipeUtil.editRecipe = async function (body, recipeImageFileNames, recipeImage, callback) {
     try {
         recipe.recipe_name = body.recipe_name;
         recipe.type_id = Number(body.type_id);
@@ -59,20 +59,25 @@ recipeUtil.editRecipe = async function (body, recipeImageFileNames, callback) {
                 try {
                     fs.unlinkSync('public/recipeimages/' + recipeOldImage);
                 } catch (error) {
-                } finally {
-                    let value = [recipe.recipe_name, recipe.type_id, recipe.recipe_level, recipe.recipe_cookingtime, recipe.recipe_ingredients, recipe.recipe_steps, recipe.recipe_people, recipe.recipe_image, recipe.recipe_description, recipe_id];
-                    let sqlQuery = "UPDATE recipes SET recipe_name=? ,type_id=? ,recipe_level=? ,recipe_cookingtime=? ,recipe_ingredients=? ,recipe_steps=? ,recipe_people=? ,recipe_image=?,recipe_description=? where recipe_id=?";
-
-                    DataBaseConnection.query(sqlQuery, value, function (error, result) {
-                        if (!error) {
-                            if (result.affectedRows == 1) {
-                                return callback(data = { status: "OK", message: "RECIPE EDITED SUCCESSFULLY" });
-                            } else {
-                                return callback(data = { status: "ERROR", message: "RECIPE NOT EXISTED" });
-                            }
-                        }
-                    });
                 }
+
+                // console.log(recipeImageFileNames[3]);
+                recipeImage.mv('public/recipeimages/' + recipe.recipe_image);
+
+
+                let value = [recipe.recipe_name, recipe.type_id, recipe.recipe_level, recipe.recipe_cookingtime, recipe.recipe_ingredients, recipe.recipe_steps, recipe.recipe_people, recipe.recipe_image, recipe.recipe_description, recipe_id];
+                let sqlQuery = "UPDATE recipes SET recipe_name=? ,type_id=? ,recipe_level=? ,recipe_cookingtime=? ,recipe_ingredients=? ,recipe_steps=? ,recipe_people=? ,recipe_image=?,recipe_description=? where recipe_id=?";
+
+                DataBaseConnection.query(sqlQuery, value, function (error, result) {
+                    if (!error) {
+                        if (result.affectedRows == 1) {
+                            return callback(data = { status: "OK", message: "RECIPE EDITED SUCCESSFULLY" });
+                        } else {
+                            return callback(data = { status: "ERROR", message: "RECIPE NOT EXISTED" });
+                        }
+                    }
+                });
+
             });
 
 
@@ -89,18 +94,29 @@ recipeUtil.editRecipe = async function (body, recipeImageFileNames, callback) {
 // Delete Recipe
 recipeUtil.deleteRecipe = async function (id, callback) {
     try {
-        if (!error) {
-            let sqlQuery = `delete from recipes where recipe_id=${id}`;
-            await DataBaseConnection.query(sqlQuery, function (error, result) {
-                if (!error) {
-                    if (result.affectedRows == 1) {
-                        return callback(data = { status: "OK", message: "RECIPE DELETED" });
-                    } else {
-                        return callback(data = { status: "ERROR", message: "RECIPE IS NOT EXISTING" });
-                    }
+        let sqlImageDelete = `SELECT recipe_image FROM recipes WHERE recipe_id=${id}`;
+        await DataBaseConnection.query(sqlImageDelete, async function (error, result) {
+            try {
+                // remove recipe and recipe image
+                try {
+                    fs.unlinkSync('public/recipeimages/'+result[0].recipe_image);
+                } catch (error) {
+                    return callback(data = { status: "OK", message: "RECIPE DELETED" });
                 }
-            });
-        }
+                let sqlQuery = `delete from recipes where recipe_id=${id}`;
+                await DataBaseConnection.query(sqlQuery, function (error, result) {
+                    if (!error) {
+                        if (result.affectedRows == 1) {
+                            return callback(data = { status: "OK", message: "RECIPE DELETED" });
+                        } else {
+                            return callback(data = { status: "ERROR", message: "RECIPE IS NOT EXISTING" });
+                        }
+                    }
+                });
+
+            } catch (error) {
+            }
+        });
     } catch (error) {
         return callback(data = { status: "ERROR", message: "ERROR" });
     }
@@ -183,12 +199,12 @@ recipeUtil.getRecipe = async function (id, user, callback) {
             LEFT JOIN recipe_type rt ON r.type_id=rt.type_id
             LEFT JOIN favorite f ON r.recipe_id=f.recipe_id
             GROUP BY r.recipe_id HAVING r.recipe_id=${id}`;
-            await DataBaseConnection.query(sqlQuery,async function (error, resultOuter) {
+            await DataBaseConnection.query(sqlQuery, async function (error, resultOuter) {
                 if (!error) {
-                    let sqlQuery=`SELECT COUNT(*) as recipeLike FROM favorite WHERE recipe_id=${id} AND user_id=${user[1]}`;
-                    await DataBaseConnection.query(sqlQuery,async function (error, result) {
+                    let sqlQuery = `SELECT COUNT(*) as recipeLike FROM favorite WHERE recipe_id=${id} AND user_id=${user[1]}`;
+                    await DataBaseConnection.query(sqlQuery, async function (error, result) {
                         if (!error) {
-                            resultOuter[0].recipeLike=result[0].recipeLike;
+                            resultOuter[0].recipeLike = result[0].recipeLike;
                             return callback(resultOuter);
                         }
                     });
@@ -311,13 +327,13 @@ recipeUtil.userFavoriteRecipe = async function (email, callback) {
             LEFT JOIN favorite f ON f.recipe_id=r.recipe_id 
             GROUP BY r.recipe_id
             HAVING f.user_id=${user_id} ORDER BY r.recipe_id DESC `;
-            await DataBaseConnection.query(sqlQuery,async function (error, resultOuter) {
+            await DataBaseConnection.query(sqlQuery, async function (error, resultOuter) {
                 if (result.length >= 1) {
-                    let sqlQuery=`SELECT COUNT(f.recipe_id) AS recipeLike
+                    let sqlQuery = `SELECT COUNT(f.recipe_id) AS recipeLike
                     FROM recipes r
                     INNER JOIN favorite f ON f.recipe_id=r.recipe_id AND f.user_id=${user_id}
                     GROUP BY r.recipe_id`;
-                    await DataBaseConnection.query(sqlQuery,function(error,result){
+                    await DataBaseConnection.query(sqlQuery, function (error, result) {
                         for (let i = 0; i < Object.keys(resultOuter).length; i++) {
                             resultOuter[i].recipeLike = result[i].recipeLike;
                         }
@@ -376,7 +392,7 @@ recipeUtil.userGetsRecipes = async function (email, count, callback) {
 }
 
 // Get Single Recipe Perticular User
-recipeUtil.userGetRecipe = async function (id,user_id,callback) {
+recipeUtil.userGetRecipe = async function (id, user_id, callback) {
     try {
         let sqlQuery = `SELECT COUNT(f.recipe_id) AS favoriteCount,
         r.recipe_id,
@@ -386,23 +402,22 @@ recipeUtil.userGetRecipe = async function (id,user_id,callback) {
         r.recipe_people,
         r.recipe_cookingtime,
         r.recipe_image,
-        r.recipe_description
+        r.recipe_description,
+        r.user_id
         FROM recipes r
         LEFT JOIN recipe_type rt ON r.type_id=rt.type_id
         LEFT JOIN favorite f ON r.recipe_id=f.recipe_id
-        GROUP BY r.recipe_id HAVING r.recipe_id=${id}`;
-
-
-        await DataBaseConnection.query(sqlQuery,async function (error,resultOuter) {
+        GROUP BY r.recipe_id HAVING r.recipe_id=${id} AND r.user_id=${user_id}`;
+        await DataBaseConnection.query(sqlQuery, async function (error, resultOuter) {
             if (error) {
-                return callback(data = { status: "ERROR", message: "RECIPE ID IS NOT EXISTS" });
+                return callback(data = { status: "ERROR", message: "RECIPE ID IS NOT EXISTS ERROR" });
             }
             if (resultOuter.length == 0) {
-                return callback(data = { status: "ERROR", message: "RECIPE IS NOT EXISTS" });
+                return callback(data = { status: "ERROR", message: "RECIPE IS NOT EXISTS"});
             } else {
-                let  sqlQuery=`SELECT COUNT(*) as recipeLike FROM favorite WHERE recipe_id=${id} AND user_id=${user_id}`;
-                await DataBaseConnection.query(sqlQuery,function(error,result){
-                    resultOuter[0].recipeLike=result[0].recipeLike;
+                let sqlQuery = `SELECT COUNT(*) as recipeLike FROM favorite WHERE recipe_id=${id} AND user_id=${user_id}`;
+                await DataBaseConnection.query(sqlQuery, function (error, result) {
+                    resultOuter[0].recipeLike = result[0].recipeLike;
                     return callback(resultOuter);
                 });
             }
@@ -428,7 +443,7 @@ recipeUtil.commentAdd = async function (body, callback) {
                         return callback(data = { status: "OK", message: "Comment is Added" });
                     }
                 } else {
-                    return callback(data = { status: "ERROR", message: "Comment is not add recipe_id  is not match " });
+                    return callback(data = { status: "ERROR", message: "Comment is not add recipe_id  is not exists " });
                 }
             });
         });
@@ -449,7 +464,7 @@ recipeUtil.commentShow = async function (id, callback) {
                 if (result.length == 0) {
                     return callback({ status: "OK", message: "recipe in comment not Exists" });
                 }
-                return callback(result);
+                return callback(comment={status:"OK",message:"",comment:result});
             } else {
                 return callback(data = { status: "ERROR", message: "Comment is not show recipe_id  is not match " });
             }

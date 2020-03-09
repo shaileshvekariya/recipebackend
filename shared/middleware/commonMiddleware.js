@@ -27,7 +27,6 @@ commonMiddleware.verifyAuthTokenAndEmail = async function (req, res, next) {
     const user_authtoken = req.headers['user_authtoken'];
     const email = req.body.user_email;
 
-
     if (typeof user_authtoken !== 'undefined') {
         await userController.userVerifyTokenAndEmail(user_authtoken, email, function (data) {
             if (data.status == "OK") {

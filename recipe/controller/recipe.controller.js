@@ -1,13 +1,17 @@
 validationRecipe = require('../../util/recipeValidation');
 recipeUtil = require('../utils/recipeUtils');
+conn=require('../../connection/connection');
 recipeController = {};
 
 // Validation Recipe And Add Recipe
 recipeController.validateRecipe = async function (body, auth_token,recipeImageFileNames,callback) {
     try {
-        data = await validationRecipe(body,recipeImageFileNames[0]);
+        // [0] = NAME  [1]=mimetype [2]=size [3]=fullImage
+        data = await validationRecipe(body,recipeImageFileNames[0],recipeImageFileNames[1],recipeImageFileNames[2]);
         if (Object.entries(data).length == 0) {
-            data = await recipeUtil.addRecipe(body, auth_token,recipeImageFileNames[1],function (data) {
+            let recipe_image_name=Date.now()+"-"+recipeImageFileNames[0];
+            recipeImageFileNames[3].mv('public/recipeimages/'+recipe_image_name);
+            data = await recipeUtil.addRecipe(body, auth_token,recipe_image_name,function (data) {
                 return callback(data);
             });
         } else {
@@ -22,9 +26,11 @@ recipeController.validateRecipe = async function (body, auth_token,recipeImageFi
 // Validation Recipe And Edit Recipe
 recipeController.validationEdit = async function (body,recipeImageFileNames,callback) {
     try {
-        data = await validationRecipe(body,recipeImageFileNames[0]);
+         // [0] = NAME  [1]=mimetype [2]=size [3]=fullImage
+        data = await validationRecipe(body,recipeImageFileNames[0],recipeImageFileNames[1],recipeImageFileNames[2]);
         if (Object.entries(data).length == 0) {
-            data = await recipeUtil.editRecipe(body,recipeImageFileNames[1],function (data) {
+            let recipe_image_name=Date.now()+"-"+recipeImageFileNames[0];
+            data = await recipeUtil.editRecipe(body,recipe_image_name,recipeImageFileNames[3],function (data) {
                 return callback(data);
             });
         } else {
