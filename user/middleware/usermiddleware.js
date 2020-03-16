@@ -7,11 +7,11 @@ usermiddleware = {};
 // User Check IS User Valid Or Not Login API
 usermiddleware.userCheckLogin = async function (req, res, next) {
     try {
-        await userController.userCheckLogin(req.body, function (data) {
-            res.status(200).send(data);
-            next();
+        await userController.userCheckLogin(req.body,function (data) {
+            return res.status(200).send(data);
         });
     } catch (error) {
+        error.message="ERROR USER MIDDLEWARE"
     }
 }
 

@@ -150,7 +150,7 @@ recipeUtil.getRecipes = async function (count, user, callback) {
                         resultOuter.map((item,i)=>{
                             resultOuter[i].recipeLike=result[i].recipeLike;
                         });
-                        return callback(resultOuter);
+                        return callback(data={status:"OK",message:"",recipes:resultOuter});
                     });
                 } else {
                     return callback(data = { status: "ERROR", message: "Please Pass a Count Data" });
@@ -172,7 +172,7 @@ recipeUtil.getRecipes = async function (count, user, callback) {
             GROUP BY r.recipe_id ORDER BY r.recipe_id DESC LIMIT ${count},10`;
             await DataBaseConnection.query(sqlQuery, function (error, result) {
                 if (!error) {
-                    return callback(result);
+                    return callback(data={status:"OK",message:"",recipes:result});
                 } else {
                     return callback(data = { status: "ERROR", message: "Please Pass a Count Data" });
                 }
@@ -208,7 +208,7 @@ recipeUtil.getRecipe = async function (id, user, callback) {
                     await DataBaseConnection.query(sqlQuery, async function (error, result) {
                         if (!error) {
                             resultOuter[0].recipeLike = result[0].recipeLike;
-                            return callback(resultOuter);
+                            return callback(data={status:"OK",message:"",recipe:resultOuter[0]});
                         }
                     });
                 } else {
@@ -238,7 +238,7 @@ recipeUtil.getRecipe = async function (id, user, callback) {
                     if (result.length == 0) {
                         return callback(data = { status: "ERROR", message: "RECIPE NOT FOUND" });
                     } else {
-                        return callback(result[0]);
+                        return callback(data={status:"OK",message:"",recipe:result[0]});
                     }
                 }
             });
@@ -342,7 +342,7 @@ recipeUtil.userFavoriteRecipe = async function (email, callback) {
                         for (let i = 0; i < Object.keys(resultOuter).length; i++) {
                             resultOuter[i].recipeLike = result[i].recipeLike;
                         }
-                        return callback(resultOuter);
+                        return callback(data={status:"OK",message:"",recipes:resultOuter});
                     });
                 } else {
                     return callback(data = { status: "ERROR", message: "Favorite Recipe is Not Exists" });
@@ -386,7 +386,7 @@ recipeUtil.userGetsRecipes = async function (email, count, callback) {
                         resultOuter.map((item,i)=>{
                             resultOuter[i].recipeLike=result[i].recipeLike;
                         });
-                        return callback(resultOuter);
+                        return callback(data={status:"OK",message:"",recipes:resultOuter});
                     });
                 }
             });
@@ -425,7 +425,7 @@ recipeUtil.userGetRecipe = async function (id, user_id, callback) {
                 let sqlQuery = `SELECT COUNT(*) as recipeLike FROM favorite WHERE recipe_id=${id} AND user_id=${user_id}`;
                 await DataBaseConnection.query(sqlQuery, function (error, result) {
                     resultOuter[0].recipeLike = result[0].recipeLike;
-                    return callback(resultOuter);
+                    return callback(data={status:"OK",message:"",recipe:resultOuter[0]});
                 });
             }
         });

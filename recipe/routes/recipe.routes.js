@@ -36,7 +36,7 @@ router.post('/delete', commonMiddleware.verifyAuthToken,commonMiddleware.bodyChe
 router.get('/getrecipes', commonMiddleware.verifyTokenAndGetRecipesDetails, async function (req, res) {
     try {
         if(isNaN(req.query.count)){
-            return res.status(400).send({status:"ERROR",message:"Count is not valid"});
+            return res.status(400).send({status:"ERROR",message:"Count is not valid format"});
         }
         await recipeController.recipesGets(req.query.count, res.user, function (data) {
             if (data.status == "ERROR") {
@@ -53,6 +53,9 @@ router.get('/getrecipes', commonMiddleware.verifyTokenAndGetRecipesDetails, asyn
 // Single Recipe
 router.get('/getrecipe', commonMiddleware.verifyTokenAndGetRecipesDetails, async function (req, res) {
     try {
+        if(isNaN(req.query.recipe_id)){
+            return res.status(400).send({status:"ERROR",message:"Recipe_id is not valid format"});
+        }
         await recipeController.recipesGet(Number(req.query.recipe_id), res.user, function (data) {
             if (data.status == "ERROR") {
                 res.status(400).send(data);

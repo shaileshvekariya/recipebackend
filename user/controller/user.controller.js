@@ -231,7 +231,9 @@ userController.profileUpdated = async function (userProfile, email, fileName, fi
             await DataBaseConnection.query(oldUserImageFetch, async function (error, result) {
                 let userOldImage = result[0].user_profile;
                 try {
-                    fs.unlinkSync('public/userimages/' + userOldImage);
+                    if(result[0].user_profile!=''){
+                        fs.unlinkSync('public/userimages/' + userOldImage);
+                    }
                 } catch (error) {
                     return callback(data = { status: "ERROR", message: "IMAGE IS NOT UPLOAD" });
                 }

@@ -80,7 +80,6 @@ router.post('/profile/updated', commonMiddleware.verifyAuthToken,commonMiddlewar
             });
         }
     } catch (error) {
-        console.log(error);
         res.send("CALLED ERROR");
     }
 });
