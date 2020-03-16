@@ -58,10 +58,10 @@ recipeMiddleware.validationEdit = async function (req, res, next) {
 // Recipe Comment Validation
 recipeMiddleware.commentValidation = async function (req, res, next) {
     try {
-        if(req.body.comment_text==undefined){
-            return res.status(400).send(data={status:"ERROR",message:"comment_text data not get"});
+        if (req.body.comment_text == undefined) {
+            return res.status(400).send(data = { status: "ERROR", message: "comment_text data not get" });
         }
-        await recipeController.commentValidate(req.body.comment_text,async function (data) {
+        await recipeController.commentValidate(req.body.comment_text, async function (data) {
             if (data.status == "OK") {
                 await recipeController.addComment(req.body, function (data) {
                     if (data.status == "ERROR") {
@@ -92,6 +92,128 @@ recipeMiddleware.recipeExistsOrNot = async function (req, res, next) {
         });
     });
 
+}
+
+
+
+// Recipe Deleted
+recipeMiddleware.recipeDelete = async function (req, res, next) {
+    try {
+        await recipeController.recipeDelete(Number(req.body.recipe_id), function (data) {
+            if (data.status == "OK") {
+                res.status(200).send(data);
+            } else {
+                res.status(400).send(data);
+            }
+        });
+    } catch (error) {
+    }
+}
+
+// Recipe Gets (Per request 10 Result)
+recipeMiddleware.recipesGets = async function (req, res, next) {
+    try {
+        if (isNaN(req.query.count)) {
+            return res.status(400).send({ status: "ERROR", message: "Count is not valid format" });
+        }
+        await recipeController.recipesGets(req.query.count, res.user, function (data) {
+            if (data.status == "ERROR") {
+                res.status(400).send(data);
+            } else {
+                res.status(200).send(data);
+            }
+        });
+    } catch (error) {
+    }
+}
+
+// Single Recipe
+recipeMiddleware.recipeGet = async function (req, res, next) {
+    try {
+        if (isNaN(req.query.recipe_id)) {
+            return res.status(400).send({ status: "ERROR", message: "Recipe_id is not valid format" });
+        }
+        await recipeController.recipeGet(Number(req.query.recipe_id), res.user, function (data) {
+            if (data.status == "ERROR") {
+                res.status(400).send(data);
+            } else {
+                res.status(200).send(data);
+            }
+        });
+    } catch (error) {
+    }
+}
+
+// favoritre Recipe (Add OR remove )
+recipeMiddleware.favorite = async function (req, res, next) {
+    try {
+        await recipeController.favorite(req.body, (data) => {
+            if (data.status == "ERROR") {
+                res.status(400).send(data);
+            } else {
+                res.status(200).send(data);
+            }
+        });
+    } catch (error) {
+    }
+}
+
+// User Favorite Recipes Gets 
+recipeMiddleware.userFavoriteRecipe = async function (req, res, next) {
+    try {
+        await recipeController.userFavoriteRecipe(req.body.user_email, function (data) {
+            if (data.status == "ERROR") {
+                res.status(400).send(data);
+            } else {
+                res.status(200).send(data);
+            }
+        });
+    } catch (error) {
+    }
+}
+
+// user All recipe gets
+recipeMiddleware.userRecipes = async function (req, res, next) {
+    try {
+        if (isNaN(req.query.count)) {
+            return res.status(400).send({ status: "ERROR", message: "Count is not valid" });
+        }
+        await recipeController.userRecipes(req.body.user_email, req.query.count, function (data) {
+            return res.status(200).send(data);
+        });
+    } catch (error) {
+    }
+}
+
+// User Perticular Recipe Get
+recipeMiddleware.userRecipe = async function (req, res, next) {
+    if (req.query.recipe_id === undefined && req.query.recipe_id == "") {
+        res.status(400).send(data = { status: "ERROR", message: "Recipe id is not get" });
+    }
+    await recipeController.userRecipe(req.query.recipe_id, req.headers['user_authtoken'], function (data) {
+        return res.status(200).send(data);
+    });
+}
+
+// Comment Add
+recipeMiddleware.commentCheckAndAdd = async function (req, res, next) {
+    try {
+        if (req.query.comment_status == "add") {
+            data = await recipeMiddleware.commentValidation(req, res);
+        }
+        else if (req.query.comment_status == "show") {
+            await recipeController.showComment(req.body.recipe_id, function (data) {
+                return res.status(200).send(data);
+            });
+        } else {
+            return res.status(400).send(data = { status: "ERROR", message: "Comment status is not valid" });
+        }
+        if (req.query.comment_status == undefined) {
+            return res.status(400).send(data = { status: "ERROR", message: "Comment Status is Not Get Please Passed Query in comment status" });
+        }
+    } catch (error) {
+        return res.status(500).send(data = { status: "ERROR", message: "COMMENT ADDED ERROR" });
+    }
 }
 
 module.exports = recipeMiddleware;

@@ -65,7 +65,7 @@ recipeController.recipesGets = async function (count, user, callback) {
 }
 
 // single recipes get(with user login or not login)
-recipeController.recipesGet = async function (id,user,callback) {
+recipeController.recipeGet = async function (id,user,callback) {
     try {
         await recipeUtil.getRecipe(id,user,function (data) {
             return callback(data);

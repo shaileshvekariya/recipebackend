@@ -7,11 +7,11 @@ usermiddleware = {};
 // User Check IS User Valid Or Not Login API
 usermiddleware.userCheckLogin = async function (req, res, next) {
     try {
-        await userController.userCheckLogin(req.body,function (data) {
+        await userController.userCheckLogin(req.body, function (data) {
             return res.status(200).send(data);
         });
     } catch (error) {
-        error.message="ERROR USER MIDDLEWARE"
+        error.message = "ERROR USER MIDDLEWARE"
     }
 }
 
@@ -32,11 +32,13 @@ usermiddleware.validationCheck = async function (req, res, next) {
 // Register Check To Email ID And Phone Number Is Duplicate
 usermiddleware.registerCheck = async function (req, res, next) {
     try {
-        await emailExistence.check(req.body.user_email.toLowerCase(),async function(error, response){
+        await emailExistence.check(req.body.user_email.toLowerCase(), async function (error, response) {
             if (response) {
-                await userController.emailOrPhoneExists(req.body.user_email, req.body.user_phone, function (data) {
+                await userController.emailOrPhoneExists(req.body.user_email, req.body.user_phone, async function (data) {
                     if (data.status == "OK") {
-                        next();
+                        await userController.registerUser(req.body, function (data) {
+                            res.send(data);
+                        });
                     } else {
                         res.status(400).send(data);
                     }
@@ -83,9 +85,14 @@ usermiddleware.otpTokenCompare = async function (req, res, next) {
         if (Object.entries(req.body).length == 0) {
             return res.status(400).send({ status: "ERROR", message: "NOT ACCEPTED REQUEST ON SERVER" });
         } else {
-            await userController.otpTokenCompare(req.body, function (data) {
+            await userController.otpTokenCompare(req.body, async function (data) {
                 if (data.status == "OK") {
-                    next();
+                    try {
+                        await userController.userForgetChangePassword(req, function (data) {
+                            return res.status(200).send(data);
+                        });
+                    } catch (error) {
+                    }
                 } else {
                     return res.status(400).send(data);
                 }
@@ -95,5 +102,54 @@ usermiddleware.otpTokenCompare = async function (req, res, next) {
     }
 }
 
+// OTP Token Generator
+usermiddleware.otpTokenGenerator = async function (req, res, next) {
+    try {
+        await userController.otpTokenGenerator(req.body.user_email, function (data) {
+            return res.status(200).send(data);
+        });
+    } catch (error) {
+        return res.status(500).send(data = { status: "ERROR", message: "ROUTE ERROR" });
+    }
+}
+
+// User Change Password
+usermiddleware.userCheckChangePassword = async function (req, res, next) {
+    try {
+        await userController.userCheckChangePassword(req.body, req.headers, function (data) {
+            if (data.status == "OK") {
+                res.status(200).send(data);
+            } else {
+                res.status(400).send(data);
+            }
+        });
+    } catch (error) {
+    }
+}
+
+// User Profile Get Profile (OK)
+usermiddleware.profileGet = async function (req, res, next) {
+    try {
+        await userController.profileGet(req.body.user_email, function (data) {
+            res.send(data);
+        });
+    } catch (error) {
+    }
+}
+
+// Profile Updated
+usermiddleware.profileUpdated = async function (req, res, next) {
+    try {
+        if (!req.files) {
+            return res.send(data = { status: "ERROR", message: "PLEASE SEND A IMAGE" });
+        } else {
+            await userController.profileUpdated(req.files.user_profile, req.body.user_email, req.files.user_profile.name, req.files.user_profile.size, function (data) {
+                res.send(data);
+            });
+        }
+    } catch (error) {
+        res.send("CALLED ERROR");
+    }
+}
 
 module.exports = usermiddleware;
