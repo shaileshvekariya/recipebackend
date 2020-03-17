@@ -1,5 +1,6 @@
 recipeController = require('../controller/recipe.controller');
 recipeUtil = require('../utils/recipeUtils');
+commonFunction = require('../shared/commonFunction/commonFunction');
 recipeMiddleware = {};
 
 // Validation Recipe
@@ -161,11 +162,17 @@ recipeMiddleware.favorite = async function (req, res, next) {
 // User Favorite Recipes Gets 
 recipeMiddleware.userFavoriteRecipe = async function (req, res, next) {
     try {
-        await recipeController.userFavoriteRecipe(req.body.user_email, function (data) {
+        commonFunction.emailExists(req.query.user_email, async function (data) {
             if (data.status == "ERROR") {
                 res.status(400).send(data);
             } else {
-                res.status(200).send(data);
+                await recipeController.userFavoriteRecipe(req.query.user_email, function (data) {
+                    if (data.status == "ERROR") {
+                        res.status(400).send(data);
+                    } else {
+                        res.status(200).send(data);
+                    }
+                });
             }
         });
     } catch (error) {
@@ -178,8 +185,14 @@ recipeMiddleware.userRecipes = async function (req, res, next) {
         if (isNaN(req.query.count)) {
             return res.status(400).send({ status: "ERROR", message: "Count is not valid" });
         }
-        await recipeController.userRecipes(req.body.user_email, req.query.count, function (data) {
-            return res.status(200).send(data);
+        commonFunction.emailExists(req.query.user_email, async function (data) {
+            if (data.status == "ERROR") {
+                res.status(400).send(data);
+            } else {
+                await recipeController.userRecipes(req.query.user_email, req.query.count, function (data) {
+                    return res.status(200).send(data);
+                });
+            }
         });
     } catch (error) {
     }

@@ -29,10 +29,10 @@ router.get('/getrecipe', commonMiddleware.verifyTokenAndGetRecipesDetails,recipe
 router.post('/select/favorite',commonMiddleware.bodyCheck, commonMiddleware.verifyAuthTokenAndEmail,recipeMiddleware.favorite);
 
 // User Favorite Recipes Gets   
-router.post('/userfavorites',commonMiddleware.verifyAuthTokenAndEmail,recipeMiddleware.userFavoriteRecipe);
+router.get('/userfavorites',commonMiddleware.verifyAuthToken,recipeMiddleware.userFavoriteRecipe);
 
 // user All recipe gets
-router.post('/myrecipes', commonMiddleware.verifyAuthTokenAndEmail,recipeMiddleware.userRecipes);
+router.get('/myrecipes', commonMiddleware.verifyAuthToken,recipeMiddleware.userRecipes);
 
 // User Perticular Recipe Get
 router.get('/myrecipe', commonMiddleware.verifyAuthToken,recipeMiddleware.userRecipe);
@@ -44,6 +44,6 @@ router.use((error,req,res,next)=>{
     if(error){
         res.status(500).send(data={status:"ERROR",message:error.message});
     }
-});
+});;
 
 module.exports = router;

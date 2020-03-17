@@ -5,6 +5,9 @@ const router = express.Router();
 const usermiddleware = require('../middleware/usermiddleware');
 const commonMiddleware = require('../shared/middleware/commonMiddleware');
 
+const swaggerUi = require('swagger-ui-express');
+const swaggerDocument = require('../swagger.json');
+
 const fileUpload = require('express-fileupload');
 
 
@@ -29,6 +32,10 @@ router.post('/profile', commonMiddleware.bodyCheck, commonMiddleware.verifyAuthT
 
 // Profile Updated API (OK)
 router.post('/profile/updated', commonMiddleware.verifyAuthToken, commonMiddleware.bodyCheck, commonMiddleware.verifyAuthTokenAndEmail, usermiddleware.profileUpdated);
+
+
+router.use('/api-docs',swaggerUi.serve);
+router.get('/api-docs',swaggerUi.setup(swaggerDocument));
 
 router.use((error, req, res, next) => {
     if (error) {

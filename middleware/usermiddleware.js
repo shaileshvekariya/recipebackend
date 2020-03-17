@@ -22,7 +22,7 @@ usermiddleware.validationCheck = async function (req, res, next) {
             if (Object.keys(data).length == 0) {
                 next();
             } else {
-                return res.status(400).send(data);
+                return res.status(400).send({status:"ERROR",ERROR:data});
             }
         });
     } catch (error) {
@@ -40,11 +40,11 @@ usermiddleware.registerCheck = async function (req, res, next) {
                             res.send(data);
                         });
                     } else {
-                        res.status(400).send(data);
+                        res.status(400).send({ status: "ERROR", ERROR:data });
                     }
                 });
             } else {
-                res.status(400).send(data = { status: "ERROR", message: "EMAIL ID IS NOT EXISTS" });
+                res.status(400).send({ status: "ERROR", ERROR:data });
             }
         });
     } catch (error) {
@@ -141,7 +141,7 @@ usermiddleware.profileGet = async function (req, res, next) {
 usermiddleware.profileUpdated = async function (req, res, next) {
     try {
         if (!req.files) {
-            return res.send(data = { status: "ERROR", message: "PLEASE SEND A IMAGE" });
+            return res.status(400).send(data = { status: "ERROR", message: "PLEASE SEND A IMAGE" });
         } else {
             await userController.profileUpdated(req.files.user_profile, req.body.user_email, req.files.user_profile.name, req.files.user_profile.size, function (data) {
                 res.send(data);

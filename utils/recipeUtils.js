@@ -99,7 +99,7 @@ recipeUtil.deleteRecipe = async function (id, callback) {
             try {
                 // remove recipe and recipe image
                 try {
-                    fs.unlinkSync('public/recipeimages/'+result[0].recipe_image);
+                    fs.unlinkSync('public/recipeimages/' + result[0].recipe_image);
                 } catch (error) {
                     return callback(data = { status: "OK", message: "RECIPE DELETED" });
                 }
@@ -147,10 +147,10 @@ recipeUtil.getRecipes = async function (count, user, callback) {
                     GROUP BY r.recipe_id ORDER BY r.recipe_id DESC LIMIT ${count},10`;
 
                     await DataBaseConnection.query(sqlQuery, function (error, result) {
-                        resultOuter.map((item,i)=>{
-                            resultOuter[i].recipeLike=result[i].recipeLike;
+                        resultOuter.map((item, i) => {
+                            resultOuter[i].recipeLike = result[i].recipeLike;
                         });
-                        return callback(data={status:"OK",message:"",recipes:resultOuter});
+                        return callback(data = { status: "OK", message: "", recipes: resultOuter });
                     });
                 } else {
                     return callback(data = { status: "ERROR", message: "Please Pass a Count Data" });
@@ -172,7 +172,7 @@ recipeUtil.getRecipes = async function (count, user, callback) {
             GROUP BY r.recipe_id ORDER BY r.recipe_id DESC LIMIT ${count},10`;
             await DataBaseConnection.query(sqlQuery, function (error, result) {
                 if (!error) {
-                    return callback(data={status:"OK",message:"",recipes:result});
+                    return callback(data = { status: "OK", message: "", recipes: result });
                 } else {
                     return callback(data = { status: "ERROR", message: "Please Pass a Count Data" });
                 }
@@ -208,7 +208,7 @@ recipeUtil.getRecipe = async function (id, user, callback) {
                     await DataBaseConnection.query(sqlQuery, async function (error, result) {
                         if (!error) {
                             resultOuter[0].recipeLike = result[0].recipeLike;
-                            return callback(data={status:"OK",message:"",recipe:resultOuter[0]});
+                            return callback(data = { status: "OK", message: "", recipe: resultOuter[0] });
                         }
                     });
                 } else {
@@ -238,7 +238,7 @@ recipeUtil.getRecipe = async function (id, user, callback) {
                     if (result.length == 0) {
                         return callback(data = { status: "ERROR", message: "RECIPE NOT FOUND" });
                     } else {
-                        return callback(data={status:"OK",message:"",recipe:result[0]});
+                        return callback(data = { status: "OK", message: "", recipe: result[0] });
                     }
                 }
             });
@@ -342,7 +342,7 @@ recipeUtil.userFavoriteRecipe = async function (email, callback) {
                         for (let i = 0; i < Object.keys(resultOuter).length; i++) {
                             resultOuter[i].recipeLike = result[i].recipeLike;
                         }
-                        return callback(data={status:"OK",message:"",recipes:resultOuter});
+                        return callback(data = { status: "OK", message: "", recipes: resultOuter });
                     });
                 } else {
                     return callback(data = { status: "ERROR", message: "Favorite Recipe is Not Exists" });
@@ -383,10 +383,10 @@ recipeUtil.userGetsRecipes = async function (email, count, callback) {
                                     WHERE r.user_id=${user_id}
                                     GROUP BY r.recipe_id ORDER BY r.recipe_id DESC  LIMIT ${count},10 `;
                     await DataBaseConnection.query(sqlQuery, function (error, result) {
-                        resultOuter.map((item,i)=>{
-                            resultOuter[i].recipeLike=result[i].recipeLike;
+                        resultOuter.map((item, i) => {
+                            resultOuter[i].recipeLike = result[i].recipeLike;
                         });
-                        return callback(data={status:"OK",message:"",recipes:resultOuter});
+                        return callback(data = { status: "OK", message: "", recipes: resultOuter });
                     });
                 }
             });
@@ -420,12 +420,12 @@ recipeUtil.userGetRecipe = async function (id, user_id, callback) {
                 return callback(data = { status: "ERROR", message: "RECIPE ID IS NOT EXISTS ERROR" });
             }
             if (resultOuter.length == 0) {
-                return callback(data = { status: "ERROR", message: "RECIPE IS NOT EXISTS"});
+                return callback(data = { status: "ERROR", message: "RECIPE IS NOT EXISTS" });
             } else {
                 let sqlQuery = `SELECT COUNT(*) as recipeLike FROM favorite WHERE recipe_id=${id} AND user_id=${user_id}`;
                 await DataBaseConnection.query(sqlQuery, function (error, result) {
                     resultOuter[0].recipeLike = result[0].recipeLike;
-                    return callback(data={status:"OK",message:"",recipe:resultOuter[0]});
+                    return callback(data = { status: "OK", message: "", recipe: resultOuter[0] });
                 });
             }
         });
@@ -471,7 +471,7 @@ recipeUtil.commentShow = async function (id, callback) {
                 if (result.length == 0) {
                     return callback({ status: "ERROR", message: "recipe in comment not Exists" });
                 }
-                return callback(comment={status:"OK",message:"",comment:result});
+                return callback(comment = { status: "OK", message: "", comment: result });
             } else {
                 return callback(data = { status: "ERROR", message: "Comment is not show recipe_id  is not match " });
             }

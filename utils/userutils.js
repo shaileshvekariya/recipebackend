@@ -30,18 +30,18 @@ userUtils.userCheckLogin = async function (body, callback) {
 userUtils.emailOrPhoneExists = async function (email, phone, callback) {
     try {
         // Email Already Exists
-        data = {};
+        data = [];
         let checkQueryEmail = `SELECT * FROM user where user_email='${email}'`;
         await DataBaseConnection.query(checkQueryEmail, function (err, result) {
             if (result.length == 1) {
-                data.emailError = { status: "ERROR", message: "User email already Exists" };
+                data.push({ fieldName:"emailError",errorMessage: "User email already Exists" });
             }
         });
 
         checkQuery = `SELECT * FROM user where user_phone=${phone}`;
         await DataBaseConnection.query(checkQuery, function (err, result) {
             if (result.length == 1) {
-                data.phoneError = { status: "ERROR", message: "Phone number already Exists" };
+                data.push({fieldName:"phoneError",errorMessage: "Phone number already Exists" });
             }
             return callback(data);
         });

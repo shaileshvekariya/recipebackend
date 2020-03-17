@@ -5,7 +5,7 @@ commonFunction = {};
 
 // User Register Checked All Validation Full Filed
 commonFunction.validationUser = function (body, callback) {
-    let data = {};
+    let data = [];
 
     user.user_firstname = body.user_firstname.trim().toLowerCase();
     user.user_lastname = body.user_lastname.trim().toLowerCase();
@@ -26,7 +26,7 @@ commonFunction.validationUser = function (body, callback) {
         || !isNaN(user.user_firstname))
         || !regexUser.test(user.user_firstname)
     ) {
-        data.firstnameError = { message: "USER FIRST NAME NOT VALID" };
+        data.push({fieldName:"firstnameError",errorMessage: "USER FIRST NAME NOT VALID" });
     }
     if ((user.user_lastname.length <= 1
         || user.user_lastname.length >= 15
@@ -34,24 +34,24 @@ commonFunction.validationUser = function (body, callback) {
         || !isNaN(user.user_lastname))
         || !regexUser.test(user.user_lastname)
     ) {
-        data.lastnameError = { message: "USER LAST NAME NOT VALID" };
+        data.push({fieldName:"lastnameError",errorMessage:"USER LAST NAME NOT VALID" });
     }
     if (!regexEmail.test(user.user_email) || user.user_email.length == 0) {
-        data.emailError = { message: "EMAIL IS NOT VALID" };
+        data.push({ fieldName:"emailError",errorMessage: "EMAIL IS NOT VALID" });
     }
 
     if (!regexPhone.test(user.user_phone)) {
-        data.phoneError = { message: "Phone Number IS Not Valid" };
+        data.push({fieldName: "phoneError",errorMessage:"Phone Number IS Not Valid" });
     }
 
     if (!regexPassword.test(user.user_password)) {
-        data.passwordError = { message: "Password Not Match Valid" };
+        data.push({fieldName: "passwordError",errorMessage:"Password Not Match Valid" });
     }
 
     if (!(user.user_gender.length == 1 &&
         (user.user_gender != 'm' ||
             user.user_gender != 'f'))) {
-        data.genderError = { message: "GENDER IS NOT SELECTED" };
+        data.push({fieldName: "genderError",errorMessage:"GENDER IS NOT SELECTED" });
     }
     return callback(data);
 }

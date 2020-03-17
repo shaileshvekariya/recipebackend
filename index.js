@@ -5,8 +5,10 @@ const bodyParser = require('body-parser');
 const dotenv = require('dotenv').config();
 
 
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true, limit: '10mb' }));
+
 
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -16,7 +18,7 @@ app.set("status", "CANCEL");
 
 // Routes
 const user = require('./routes/user.routes');
-const recipe = require('./routes/recipe.routes');    
+const recipe = require('./routes/recipe.routes');
 
 
 // Router Assign User
@@ -29,6 +31,6 @@ app.all('*', function (req, res) {
     return res.status(404).send("API NOT FOUND");
 });
 
-app.listen(process.env.PORT,function(){
+app.listen(process.env.PORT, function () {
     console.log("SERVER START");
 });
