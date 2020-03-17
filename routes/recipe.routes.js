@@ -3,7 +3,7 @@ const router = express.Router();
 const fileUpload=require('express-fileupload');
 
 
-const commonMiddleware = require('../../shared/middleware/commonMiddleware');
+const commonMiddleware = require('../shared/middleware/commonMiddleware');
 const recipeMiddleware = require('../middleware/recipe_middleware');
 
 router.use(fileUpload());

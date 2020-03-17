@@ -3,7 +3,7 @@ const express = require('express');
 const router = express.Router();
 
 const usermiddleware = require('../middleware/usermiddleware');
-const commonMiddleware = require('../../shared/middleware/commonMiddleware');
+const commonMiddleware = require('../shared/middleware/commonMiddleware');
 
 const fileUpload = require('express-fileupload');
 

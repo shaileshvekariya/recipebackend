@@ -1,4 +1,4 @@
-const DataBaseConnection = require('../../connection/connection');
+const DataBaseConnection = require('../connection/connection');
 const recipe = require('../model/recipe.model');
 const fs = require('fs');
 

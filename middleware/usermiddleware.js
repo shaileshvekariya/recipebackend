@@ -1,4 +1,4 @@
-const commonFunction = require('../../shared/commonFunction/commonFunction');
+const commonFunction = require('../shared/commonFunction/commonFunction');
 const userController = require('../controller/user.controller');
 const emailExistence = require('email-existence');
 

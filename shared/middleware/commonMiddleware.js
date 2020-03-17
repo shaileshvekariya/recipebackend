@@ -1,4 +1,4 @@
-const userController = require('../../user/controller/user.controller');
+const userController = require('../../controller/user.controller');
 const commonMiddleware = {};
 
 // Only Auth User Token Chacked (COMMON MIDDLEWARE USER AND RECIPE)

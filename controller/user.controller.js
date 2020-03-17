@@ -1,9 +1,9 @@
-const DataBaseConnection = require('../../connection/connection');
+const DataBaseConnection = require('../connection/connection');
 const crypto = require('crypto');
 const fs = require('fs');
 
 const userUtils = require('../utils/userutils');
-const sendMail = require('../../nodeMailer/SendMail');
+const sendMail = require('../nodeMailer/SendMail');
 
 userController = {};
 

@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const user = require('../model/user.model');
-const DataBaseConnection = require('../../connection/connection');
+const DataBaseConnection = require('../connection/connection');
 
 
 const userUtils = {};

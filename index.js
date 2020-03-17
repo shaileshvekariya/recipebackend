@@ -15,8 +15,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.set("status", "CANCEL");
 
 // Routes
-const user = require('./user/routes/user.routes');
-const recipe = require('./recipe/routes/recipe.routes');    
+const user = require('./routes/user.routes');
+const recipe = require('./routes/recipe.routes');    
 
 
 // Router Assign User

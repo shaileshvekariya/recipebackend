@@ -1,4 +1,4 @@
-const user = require('../../user/model/user.model');
+const user = require('../../model/user.model');
 const DataBaseConnection = require('../../connection/connection');
 
 commonFunction = {};
