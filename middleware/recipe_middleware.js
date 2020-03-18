@@ -46,7 +46,7 @@ recipeMiddleware.validationEdit = async function (req, res, next) {
         await recipeController.validationEdit(req.body, recipeImageFileNames, function (data) {
             if (data.status == "OK") {
                 res.status(200).send(data);
-                next();
+                // next();
             } else {
                 return res.status(400).send(data);
             }
@@ -83,16 +83,19 @@ recipeMiddleware.commentValidation = async function (req, res, next) {
 
 // Recipe IS EXISTS OR NOT
 recipeMiddleware.recipeExistsOrNot = async function (req, res, next) {
-    await userController.getUserIdToAuthToken(req.headers['user_authtoken'], async function (user) {
-        await recipeUtil.userGetRecipe(Number(req.body.recipe_id), user, function (data) {
-            if (data.status == "ERROR") {
-                return res.status(400).send(data = { status: "ERROR", message: "User is not authorization to this recipe" });
-            } else {
-                next();
-            }
+    if (req.body.recipe_id == '' || req.body.recipe_id == undefined) {
+        return res.status(400).send(data = { status: "ERROR", message: "Select Recipe (recipe id is not get)" });
+    } else {
+        await userController.getUserIdToAuthToken(req.headers['user_authtoken'], async function (user) {
+            await recipeUtil.userGetRecipe(Number(req.body.recipe_id), user, function (data) {
+                if (data.status == "ERROR") {
+                    return res.status(400).send(data = { status: "ERROR", message: "User is not authorization to this recipe" });
+                } else {
+                    next();
+                }
+            });
         });
-    });
-
+    }
 }
 
 

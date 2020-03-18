@@ -26,7 +26,7 @@ commonFunction.validationUser = function (body, callback) {
         || !isNaN(user.user_firstname))
         || !regexUser.test(user.user_firstname)
     ) {
-        data.push({fieldName:"firstnameError",errorMessage: "USER FIRST NAME NOT VALID" });
+        data.push({ fieldName: "firstnameError", errorMessage: "USER FIRST NAME NOT VALID" });
     }
     if ((user.user_lastname.length <= 1
         || user.user_lastname.length >= 15
@@ -34,24 +34,24 @@ commonFunction.validationUser = function (body, callback) {
         || !isNaN(user.user_lastname))
         || !regexUser.test(user.user_lastname)
     ) {
-        data.push({fieldName:"lastnameError",errorMessage:"USER LAST NAME NOT VALID" });
+        data.push({ fieldName: "lastnameError", errorMessage: "USER LAST NAME NOT VALID" });
     }
     if (!regexEmail.test(user.user_email) || user.user_email.length == 0) {
-        data.push({ fieldName:"emailError",errorMessage: "EMAIL IS NOT VALID" });
+        data.push({ fieldName: "emailError", errorMessage: "EMAIL IS NOT VALID" });
     }
 
     if (!regexPhone.test(user.user_phone)) {
-        data.push({fieldName: "phoneError",errorMessage:"Phone Number IS Not Valid" });
+        data.push({ fieldName: "phoneError", errorMessage: "Phone Number IS Not Valid" });
     }
 
     if (!regexPassword.test(user.user_password)) {
-        data.push({fieldName: "passwordError",errorMessage:"Password Not Match Valid" });
+        data.push({ fieldName: "passwordError", errorMessage: "Password Not Match Valid" });
     }
 
     if (!(user.user_gender.length == 1 &&
         (user.user_gender != 'm' ||
             user.user_gender != 'f'))) {
-        data.push({fieldName: "genderError",errorMessage:"GENDER IS NOT SELECTED" });
+        data.push({ fieldName: "genderError", errorMessage: "GENDER IS NOT SELECTED" });
     }
     return callback(data);
 }
@@ -75,6 +75,19 @@ commonFunction.emailExists = async function (email, callback) {
     }
 }
 
+// Email VAlidation Check
+commonFunction.emailValid = async function (email, callback) {
+    let user_email = email.trim();
+    let regexEmail = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
+
+    if (!regexEmail.test(user_email) || user_email.length == 0) {
+        return callback(data={ status: "ERROR", errorMessage: "EMAIL IS NOT VALID" });
+    }else{
+        return callback(data={ status: "OK"});
+    }
+}
+
+
 // Password Validation
 commonFunction.passwordValid = async function (password, callback) {
     let regexPassword = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,12}$/;
@@ -86,17 +99,17 @@ commonFunction.passwordValid = async function (password, callback) {
 }
 
 // Image Validation
-commonFunction.imageValidation=async function(file,fileSize,mimetype,callback){
-    if((!isNaN(file) || file.lastIndexOf('.')==-1) ||
-    !["jpeg","jpg","png"].includes(file.substring(file.lastIndexOf('.')+ 1).toLowerCase())){
-        return callback(data={status:"ERROR",message:"IMAGE IS NOT VALID Format(jpeg,jpg,png) Ex.Ab.jpg"});
-    }else if(mimetype!=="image/jpeg" && mimetype !== "image/jpeg" && mimetype!=="image/png"){
-        return callback(data={status:"ERROR",message:"Only image allow format(jpeg,jpg,png)"});
-    }else if(fileSize>=2000000){
-        return callback(data={status:"ERROR",message:"Image File is Greater then a 2 MB upload a small file"});
+commonFunction.imageValidation = async function (file, fileSize, mimetype, callback) {
+    if ((!isNaN(file) || file.lastIndexOf('.') == -1) ||
+        !["jpeg", "jpg", "png"].includes(file.substring(file.lastIndexOf('.') + 1).toLowerCase())) {
+        return callback(data = { status: "ERROR", message: "IMAGE IS NOT VALID Format(jpeg,jpg,png) Ex.Ab.jpg" });
+    } else if (mimetype !== "image/jpeg" && mimetype !== "image/jpeg" && mimetype !== "image/png") {
+        return callback(data = { status: "ERROR", message: "Only image allow format(jpeg,jpg,png)" });
+    } else if (fileSize >= 2000000) {
+        return callback(data = { status: "ERROR", message: "Image File is Greater then a 2 MB upload a small file" });
     }
-    else{
-        return callback(data={status:"OK",message:""});
+    else {
+        return callback(data = { status: "OK", message: "" });
     }
 }
 

@@ -1,8 +1,11 @@
 const DataBaseConnection = require('../connection/connection');
+const user = require('../model/user.model');
+const commonFunction = require('../shared/commonFunction/commonFunction');
+const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const fs = require('fs');
 
-const userUtils = require('../utils/userutils');
+// const userUtils = require('../utils/userutils');
 const sendMail = require('../nodeMailer/SendMail');
 
 userController = {};
@@ -10,8 +13,31 @@ userController = {};
 // Login API User Exists Or Not
 userController.userCheckLogin = async function (body, callback) {
     try {
-        await userUtils.userCheckLogin(body, function (data) {
-            return callback(data);
+        // await userUtils.userCheckLogin(body, function (data) {
+        //     return callback(data);
+        // });
+        commonFunction.emailValid(body.user_email, async function (data) {
+            if (data.status == "ERROR") {
+                return callback(data);
+            } else {
+                let user_password = crypto.createHash('md5').update(body.user_password).digest('hex');
+                let sqlQueryEmailCheck = `SELECT user_email FROM user where user_email='${body.user_email}'`;
+                await DataBaseConnection.query(sqlQueryEmailCheck, async (error, rows) => {
+                    if (rows.length == 0) {
+                        return callback(data = { status: "ERROR", message: "Email id is not exists" });
+                    } else {
+                        let sqlQuery = `SELECT user_authtoken,user_email FROM user where user_email='${body.user_email}' AND user_password='${user_password}'`;
+                        await DataBaseConnection.query(sqlQuery, (error, rows, fields) => {
+                            if (rows.length == 0) {
+                                return callback(data = { status: "ERROR", message: "Password is not matching" });
+                            } else {
+                                return callback(data = { status: "OK", message: "USER EXISTS", user_email: rows[0].user_email, user_authtoken: rows[0].user_authtoken });
+                            }
+                        });
+                    }
+                });
+
+            }
         });
     } catch (error) {
         return callback(data = { status: "ERROR", message: "USER CONSTROLLER CHANGE PASSWORD MESSAGE" });
@@ -22,27 +48,75 @@ userController.userCheckLogin = async function (body, callback) {
 // Email Or Phone Check To Register user to a Valid Or Already Exists
 userController.emailOrPhoneExists = async function (email, phone, callback) {
     try {
-        await userUtils.emailOrPhoneExists(email, phone, function (data) {
-            if (Object.entries(data).length == 0) {
-                return callback(data = { status: "OK", message: "" });
-            } else {
-                return callback(data);
+        // Email Already Exists
+        data = [];
+        let checkQueryEmail = `SELECT * FROM user where user_email='${email}'`;
+        await DataBaseConnection.query(checkQueryEmail, function (err, result) {
+            if (result.length == 1) {
+                data.push({ fieldName: "emailError", errorMessage: "User email already Exists" });
             }
+        });
+
+        checkQuery = `SELECT * FROM user where user_phone=${phone}`;
+        await DataBaseConnection.query(checkQuery, function (err, result) {
+            if (result.length == 1) {
+                data.push({ fieldName: "phoneError", errorMessage: "Phone number already Exists" });
+            }
+            return callback(data);
         });
     } catch (error) {
 
     }
+
+    // try {
+    //     await userUtils.emailOrPhoneExists(email, phone, function (data) {
+    //         if (Object.entries(data).length == 0) {
+    //             return callback(data = { status: "OK", message: "" });
+    //         } else {
+    //             return callback(data);
+    //         }
+    //     });
+    // } catch (error) {
+    // }
 }
 
 // Register User Controller
 userController.registerUser = async function (body, callback) {
     try {
-        userUtils.registerUser(body, function (data) {
-            return callback(data);
+        user.user_firstname = body.user_firstname.trim().toLowerCase();
+        user.user_lastname = body.user_lastname.trim().toLowerCase();
+        user.user_email = body.user_email.trim().toLowerCase();
+        user.user_phone = Number(body.user_phone.trim());
+
+        user.user_password = crypto.createHash('md5').update(body.user_password).digest('hex');
+
+        // user.user_password = body.user_password;
+
+        user.user_gender = body.user_gender.trim().toLowerCase();
+
+        const token = jwt.sign({ user: 'user' }, 'token');
+        user.user_authtoken = token;
+
+
+        let sqlQuery = "INSERT INTO user SET ?";
+        await DataBaseConnection.query(sqlQuery, user, (error) => {
+            if (!error) {
+                return callback({ status: "OK", message: "RECORD SUBMITED", user_authtoken: user.user_authtoken });
+            } else {
+                return callback({ status: "ERROR", message: "Not Inserted" });
+            }
         });
     } catch (error) {
-        return callback(data = { status: "ERROR", message: "Register Controller Error" });
+        return callback({ status: "ERROR", message: "Not Inserted" });
     }
+
+    // try {
+    //     // userUtils.registerUser(body, function (data) {
+    //     //     return callback(data);
+    //     // });
+    // } catch (error) {
+    //     return callback(data = { status: "ERROR", message: "Register Controller Error" });
+    // }
 }
 
 // Email Exists Or Not Check To Common Function
@@ -155,7 +229,7 @@ userController.userVerifyToken = async function (token_header, callback) {
         });
     } catch (error) {
     }
-};
+}
 
 // Auth Token And Email Verified
 userController.userVerifyTokenAndEmail = async function (user_authtoken, email, callback) {
@@ -225,13 +299,13 @@ userController.profileGet = async function (email, callback) {
 
 // User Profile Image Upload And Updated
 userController.profileUpdated = async function (userProfile, email, fileName, fileSize, callback) {
-    await commonFunction.imageValidation(fileName, fileSize,userProfile.mimetype, async function (data) {
+    await commonFunction.imageValidation(fileName, fileSize, userProfile.mimetype, async function (data) {
         if (data.status !== "ERROR") {
             let oldUserImageFetch = `SELECT user_profile FROM user WHERE user_email='${email}'`;
             await DataBaseConnection.query(oldUserImageFetch, async function (error, result) {
                 let userOldImage = result[0].user_profile;
                 try {
-                    if(result[0].user_profile!=''){
+                    if (result[0].user_profile != '') {
                         fs.unlinkSync('public/userimages/' + userOldImage);
                     }
                 } catch (error) {
@@ -259,8 +333,8 @@ userController.profileUpdated = async function (userProfile, email, fileName, fi
 }
 
 // UserToken To Get User_id
-userController.getUserIdToAuthToken = function (auth_token, callback) {
-    DataBaseConnection.query(`SELECT user_id FROM user where user_authtoken='${auth_token}'`, function (error, result) {
+userController.getUserIdToAuthToken = async function (auth_token, callback) {
+    await DataBaseConnection.query(`SELECT user_id FROM user where user_authtoken='${auth_token}'`, function (error, result) {
         return callback(result[0].user_id);
     });
 }

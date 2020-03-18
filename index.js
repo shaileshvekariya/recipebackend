@@ -7,7 +7,7 @@ const dotenv = require('dotenv').config();
 
 
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true, limit: '10mb' }));
+app.use(bodyParser.urlencoded({ extended: true, limit: '20mb' }));
 
 
 app.use(express.static(path.join(__dirname, 'public')));

@@ -9,6 +9,8 @@ commonMiddleware.verifyAuthToken = async function (req, res, next) {
     // console.log(req.body);
     // console.log(req.files);
 
+    
+
     const token_header = req.headers['user_authtoken'];
     if (typeof token_header !== 'undefined') {
         await userController.userVerifyToken(token_header, function (data) {

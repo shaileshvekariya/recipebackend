@@ -8,7 +8,10 @@ usermiddleware = {};
 usermiddleware.userCheckLogin = async function (req, res, next) {
     try {
         await userController.userCheckLogin(req.body, function (data) {
-            return res.status(200).send(data);
+            if (data.status == "OK") {
+                return res.status(200).send(data);
+            }
+            return res.status(400).send(data);
         });
     } catch (error) {
         error.message = "ERROR USER MIDDLEWARE"
@@ -22,7 +25,7 @@ usermiddleware.validationCheck = async function (req, res, next) {
             if (Object.keys(data).length == 0) {
                 next();
             } else {
-                return res.status(400).send({status:"ERROR",ERROR:data});
+                return res.status(400).send({ status: "ERROR", ERROR: data });
             }
         });
     } catch (error) {
@@ -35,16 +38,23 @@ usermiddleware.registerCheck = async function (req, res, next) {
         await emailExistence.check(req.body.user_email.toLowerCase(), async function (error, response) {
             if (response) {
                 await userController.emailOrPhoneExists(req.body.user_email, req.body.user_phone, async function (data) {
-                    if (data.status == "OK") {
+                    if (Object.entries(data).length == 0) {
                         await userController.registerUser(req.body, function (data) {
-                            res.send(data);
+                            return res.send(data);
                         });
                     } else {
-                        res.status(400).send({ status: "ERROR", ERROR:data });
+                        return res.status(400).send({ status: "ERROR", ERROR: data });
                     }
+                    // if (data.status == "OK") {
+                    //     await userController.registerUser(req.body, function (data) {
+                    //         res.send(data);
+                    //     });
+                    // } else {
+                    //     res.status(400).send({ status: "ERROR", ERROR:data });
+                    // }
                 });
             } else {
-                res.status(400).send({ status: "ERROR", ERROR:data });
+                res.status(400).send({ status: "ERROR", ERROR: data });
             }
         });
     } catch (error) {
@@ -54,11 +64,17 @@ usermiddleware.registerCheck = async function (req, res, next) {
 
 // User Forget Password To Check Email Exists Or Not
 usermiddleware.emailCheck = async function (req, res, next) {
-    data = await userController.emailExists(req.body.user_email, function (data) {
-        if (data.status == "OK") {
-            next();
-        } else {
+    await commonFunction.emailValid(req.body.user_email, async function (data) {
+        if (data.status == "ERROR") {
             return res.status(400).send(data);
+        } else {
+            await userController.emailExists(req.body.user_email, function (data) {
+                if (data.status == "OK") {
+                    next();
+                } else {
+                    return res.status(400).send(data);
+                }
+            });
         }
     });
 }

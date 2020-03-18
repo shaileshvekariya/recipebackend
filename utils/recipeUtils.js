@@ -9,16 +9,16 @@ recipeUtil.addRecipe = async function (body, auth_token, recipeImageFileNames, c
     try {
         let sqlUserID = `SELECT user_id from user where user_authtoken='${auth_token}'`;
         await DataBaseConnection.query(sqlUserID, async function (error, result) {
-            recipe.recipe_name = body.recipe_name;
+            recipe.recipe_name = body.recipe_name.trim().toLowerCase();
             recipe.type_id = Number(body.type_id);
-            recipe.recipe_level = body.recipe_level;
+            recipe.recipe_level = body.recipe_level.trim().toLowerCase();;
             recipe.recipe_cookingtime = Number(body.recipe_cookingtime);
             recipe.recipe_ingredients = body.recipe_ingredients;
             recipe.recipe_steps = body.recipe_steps;
             recipe.recipe_people = Number(body.recipe_people);
             recipe.recipe_image = recipeImageFileNames;
             recipe.user_id = result[0].user_id;
-            recipe.recipe_description = body.recipe_description;
+            recipe.recipe_description = body.recipe_description.toLowerCase();;
 
             let recipeValue = [recipe.recipe_name, recipe.type_id, recipe.recipe_level, recipe.recipe_cookingtime, recipe.recipe_ingredients, recipe.recipe_steps, recipe.recipe_people, recipe.recipe_image, recipe.user_id, recipe.recipe_description];
 
@@ -40,15 +40,15 @@ recipeUtil.addRecipe = async function (body, auth_token, recipeImageFileNames, c
 // Edit Recipe
 recipeUtil.editRecipe = async function (body, recipeImageFileNames, recipeImage, callback) {
     try {
-        recipe.recipe_name = body.recipe_name;
+        recipe.recipe_name = body.recipe_name.trim().toLowerCase();
         recipe.type_id = Number(body.type_id);
-        recipe.recipe_level = body.recipe_level;
+        recipe.recipe_level = body.recipe_level.trim().toLowerCase();
         recipe.recipe_cookingtime = Number(body.recipe_cookingtime);
         recipe.recipe_ingredients = body.recipe_ingredients;
         recipe.recipe_steps = body.recipe_steps;
         recipe.recipe_people = Number(body.recipe_people);
         recipe.recipe_image = recipeImageFileNames;
-        recipe.recipe_description = body.recipe_description;
+        recipe.recipe_description = body.recipe_description.trim().toLowerCase();
         let recipe_id = body.recipe_id;
 
         if (!isNaN(recipe_id) && recipe_id !== "") {
@@ -416,7 +416,6 @@ recipeUtil.userGetRecipe = async function (id, user_id, callback) {
         GROUP BY r.recipe_id HAVING r.recipe_id=${id}`;
         await DataBaseConnection.query(sqlQuery, async function (error, resultOuter) {
             if (error) {
-                console.log(error);
                 return callback(data = { status: "ERROR", message: "RECIPE ID IS NOT EXISTS ERROR" });
             }
             if (resultOuter.length == 0) {
