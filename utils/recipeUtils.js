@@ -317,37 +317,85 @@ recipeUtil.userFavoriteRecipe = async function (email, callback) {
         await DataBaseConnection.query(sqlQueryUser_ID, async function (error, result) {
             let user_id = result[0].user_id;
 
-            let sqlQuery = `SELECT COUNT(f.recipe_id) AS favoriteCount,	    
-			f.user_id,
-			r.recipe_id,
+            let sqlQuery = `SELECT  COUNT(r.recipe_id) AS favoriteCount,
+            r.recipe_id,
+            f.recipe_like as recipeLike,
             rt.type_name,
             r.recipe_name,
             r.recipe_level,
             r.recipe_people,
             r.recipe_cookingtime,
             r.recipe_image,
-            r.recipe_description
-            FROM recipes r
+            r.recipe_description,
+            r.recipe_steps
+            FROM favorite f
+            LEFT JOIN  recipes r ON r.recipe_id=f.recipe_id 
             LEFT JOIN recipe_type rt ON r.type_id=rt.type_id
-            LEFT JOIN favorite f ON f.recipe_id=r.recipe_id 
             GROUP BY r.recipe_id
-            HAVING f.user_id=${user_id} ORDER BY r.recipe_id DESC `;
-            await DataBaseConnection.query(sqlQuery, async function (error, resultOuter) {
-                if (result.length >= 1) {
-                    let sqlQuery = `SELECT COUNT(f.recipe_id) AS recipeLike
-                    FROM recipes r
-                    INNER JOIN favorite f ON f.recipe_id=r.recipe_id AND f.user_id=${user_id}
-                    GROUP BY r.recipe_id`;
-                    await DataBaseConnection.query(sqlQuery, function (error, result) {
-                        for (let i = 0; i < Object.keys(resultOuter).length; i++) {
-                            resultOuter[i].recipeLike = result[i].recipeLike;
+            HAVING r.recipe_id IN 
+            (SELECT 
+			r.recipe_id
+            FROM favorite f
+            LEFT JOIN  recipes r ON r.recipe_id=f.recipe_id 
+            WHERE f.user_id=${user_id}
+            ORDER BY r.recipe_id DESC )
+            ORDER BY r.recipe_id DESC`;
+
+            await DataBaseConnection.query(sqlQuery, async function (error, result) {
+                try {
+                    if (!error) {
+                        if (result.length != 0) {
+                            return callback(data = { status: "OK", message: "", recipes: result });
+                        } else {
+                            return callback(data = { status: "ERROR", message: "Favorite Recipe is Not Exists" });
                         }
-                        return callback(data = { status: "OK", message: "", recipes: resultOuter });
-                    });
-                } else {
-                    return callback(data = { status: "ERROR", message: "Favorite Recipe is Not Exists" });
+                    }
+                } catch (error) {
+                    error.message="Recipe Utils Error";
                 }
             });
+
+            // let sqlQuery = `SELECT  f.favorite_id,
+            // r.recipe_id,
+            // rt.type_name,
+            // r.recipe_name,
+            // r.recipe_level,
+            // r.recipe_people,
+            // r.recipe_cookingtime,
+            // r.recipe_image,
+            // r.recipe_description
+            // FROM favorite f
+            // LEFT JOIN  recipes r ON r.recipe_id=f.recipe_id 
+            // LEFT JOIN recipe_type rt ON r.type_id=rt.type_id
+            // WHERE f.user_id=${user_id}
+            // ORDER BY r.recipe_id DESC `;
+
+            // await DataBaseConnection.query(sqlQuery, async function (error, resultOuter) {
+            //     if (result.length >= 1) {
+            //         let recipe_id_list=[];
+            //         for (let i = 0; i < Object.keys(resultOuter).length; i++) {
+            //             recipe_id_list.push(resultOuter[i].recipe_id);
+            //         }
+
+            //         let sqlQuery = `SELECT  COUNT(r.recipe_id) AS favoriteCount
+            //         FROM favorite f
+            //         LEFT JOIN  recipes r ON r.recipe_id=f.recipe_id 
+            //         LEFT JOIN recipe_type rt ON r.type_id=rt.type_id
+            //         GROUP BY r.recipe_id
+            //         HAVING r.recipe_id IN (?)
+            //         ORDER BY r.recipe_id DESC`;
+
+            //         await DataBaseConnection.query(sqlQuery,[recipe_id_list], function (error, result) {
+            //             for (let i = 0; i < Object.keys(resultOuter).length; i++) {
+            //                 resultOuter[i].favoriteCount = result[i].favoriteCount;
+            //                 resultOuter[i].recipeLike = 1;
+            //             }
+            //             return callback(data = { status: "OK", message: "", recipes: resultOuter });
+            //         });
+            //     } else {
+            //         return callback(data = { status: "ERROR", message: "Favorite Recipe is Not Exists" });
+            //     }
+            // });
         });
     } catch (error) {
     }

@@ -75,3 +75,53 @@ FROM recipes r
 INNER JOIN favorite f ON f.recipe_id=r.recipe_id AND f.user_id=2
 GROUP BY r.recipe_id
 
+
+--ALL Recipe id How Many Count
+SELECT  COUNT(r.recipe_id) AS favoriteCount,
+			r.recipe_id
+            FROM favorite f
+            LEFT JOIN  recipes r ON r.recipe_id=f.recipe_id 
+            LEFT JOIN recipe_type rt ON r.type_id=rt.type_id
+            GROUP BY r.recipe_id
+            HAVING r.recipe_id IN (59,58,56,29,8,3,7,1)
+            ORDER BY r.recipe_id DESC;
+
+-- ALL FAVORRITE IN PERTICULAR USER ID ALL RECIPE
+SELECT  f.favorite_id,
+            f.user_id,
+			r.recipe_id,
+            rt.type_name,
+            r.recipe_name,
+            r.recipe_level,
+            r.recipe_people,
+            r.recipe_cookingtime,
+            r.recipe_image,
+            r.recipe_description
+            FROM favorite f
+            LEFT JOIN  recipes r ON r.recipe_id=f.recipe_id 
+            LEFT JOIN recipe_type rt ON r.type_id=rt.type_id
+            WHERE f.user_id=2
+            ORDER BY r.recipe_id DESC;
+
+
+SELECT  COUNT(r.recipe_id) AS favoriteCount,        
+            r.recipe_id,
+            rt.type_name,
+            r.recipe_name,
+            r.recipe_level,
+            r.recipe_people,
+            r.recipe_cookingtime,
+            r.recipe_image,
+            r.recipe_description
+            FROM favorite f
+            LEFT JOIN  recipes r ON r.recipe_id=f.recipe_id 
+            LEFT JOIN recipe_type rt ON r.type_id=rt.type_id
+            GROUP BY r.recipe_id
+            HAVING r.recipe_id IN 
+            (SELECT 
+			r.recipe_id
+            FROM favorite f
+            LEFT JOIN  recipes r ON r.recipe_id=f.recipe_id 
+            WHERE f.user_id=1
+            ORDER BY r.recipe_id DESC )
+            ORDER BY r.recipe_id DESC
